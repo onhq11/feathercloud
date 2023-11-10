@@ -2,11 +2,11 @@ import { Box, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import Files from "./Files";
 
-export default function FilesList() {
+export default function FilesList({ handleOpenPreview }) {
   const [files, setFiles] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:3000/files", {
+    fetch("http://localhost:3002/api/files", {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
@@ -19,7 +19,8 @@ export default function FilesList() {
   }, []);
 
   return (
-    <Box sx={{ flex: 1, gap: 2, display: "flex", flexDirection: "column" }}>
+    <Box sx={{ flex: 1, gap: 2, display: "flex", flexDirection: "column",
+      maxHeight: {xs: "", lg: "60vh"} }}>
       <Typography variant="h6" sx={{ fontWeight: 600, color: "#a8a8a8" }}>
         Files list
       </Typography>
@@ -34,7 +35,11 @@ export default function FilesList() {
         }}
       >
         {files.map((item, index) => (
-          <Files key={index} data={item} />
+          <Files
+            key={index}
+            data={item}
+            handleOpenPreview={handleOpenPreview}
+          />
         ))}
       </Box>
     </Box>
