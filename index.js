@@ -3,12 +3,14 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const cors = require("cors");
+const dotenv = require("dotenv");
+const autoindex = require("express-autoindex");
 
-const autoindexPath = ".";
+dotenv.config();
+const autoindexPath = process.env.AUTOINDEX_PATH;
+const port = process.env.WEBSERVER_PORT;
 
 const app = express();
-const port = 3000;
-
 const storage = multer.diskStorage({
   destination: autoindexPath,
   filename: (req, file, cb) => {
@@ -19,11 +21,12 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+app.use("/files", autoindex("uploads"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("client/build"));
 app.use(cors());
 
-app.post("/upload", upload.single("file"), (req, res) => {
+app.post("/api/upload", upload.single("file"), (req, res) => {
   if (!req.file) {
     return res.status(400).send(`{"message": "No file uploaded"}`);
   }
@@ -31,7 +34,7 @@ app.post("/upload", upload.single("file"), (req, res) => {
   return res.status(200).send(`{"message": "File uploaded successfully"}`);
 });
 
-app.get("/files", (req, res) => {
+app.get("/api/files", (req, res) => {
   let out = [];
 
   fs.readdir(autoindexPath, (err, files) => {
