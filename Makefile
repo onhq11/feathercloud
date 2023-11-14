@@ -8,7 +8,7 @@ build:
 
 install:
 	@echo "Installing dependencies"
-	@yarn install && cd client && yarn install && cd ../admin && yarn install
+	@yarn && cd client && yarn && cd ../admin && yarn
 
 init: install build
 	@echo "Initialization complete"
