@@ -13,10 +13,15 @@ Lightweight and easy-to-use file server with single-device permissions.<br>
 
 FeatherCloud is an lightweight open-source file server with ability to give permissions to every single device using websockets. Server is using autoindex in uploads folder 
 
-## Requirements
+## Requirements (without Docker)
 - NodeJS
+- Yarn
 
 ## How to use?
+### Docker container
+- Run docker ```docker compose up```
+
+### Without Docker container
 - Download server from [releases menu](https://github.com/onhq11/FeatherCloud/releases) (choose latest version)
 - Unzip and enter to folder
 - Init app ```make init```

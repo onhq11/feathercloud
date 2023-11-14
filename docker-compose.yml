@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  feathercloud:
+    image: onhq/feathercloud
+    volumes:
+      - ${CONTAINER_VOLUME}:/app
+    environment:
+      AUTOINDEX_PATH: ${AUTOINDEX_PATH}
+      WEBSERVER_PORT: ${WEBSERVER_PORT}
+      ADMIN_PANEL_PORT: ${ADMIN_PANEL_PORT}
+    ports:
+      - ${WEBSERVER_PORT}:${WEBSERVER_PORT}
+      - ${ADMIN_PANEL_PORT}:${ADMIN_PANEL_PORT}
