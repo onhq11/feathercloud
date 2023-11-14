@@ -2,7 +2,7 @@ import { Box, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import Files from "./Files";
 
-export default function FilesList({ handleOpenPreview }) {
+export default function FilesList({ handleOpenPreview, handleReloadList }) {
   const [files, setFiles] = useState([]);
 
   useEffect(() => {
@@ -19,8 +19,15 @@ export default function FilesList({ handleOpenPreview }) {
   }, []);
 
   return (
-    <Box sx={{ flex: 1, gap: 2, display: "flex", flexDirection: "column",
-      maxHeight: {xs: "", lg: "60vh"} }}>
+    <Box
+      sx={{
+        flex: 1,
+        gap: 2,
+        display: "flex",
+        flexDirection: "column",
+        maxHeight: { xs: "", lg: "60vh" },
+      }}
+    >
       <Typography variant="h6" sx={{ fontWeight: 600, color: "#a8a8a8" }}>
         Files list
       </Typography>
@@ -31,7 +38,7 @@ export default function FilesList({ handleOpenPreview }) {
           flexDirection: "column",
           gap: 2,
           height: "100px",
-          overflow: "scroll",
+          overflow: "auto",
         }}
       >
         {files.map((item, index) => (
@@ -39,6 +46,7 @@ export default function FilesList({ handleOpenPreview }) {
             key={index}
             data={item}
             handleOpenPreview={handleOpenPreview}
+            handleReloadList={handleReloadList}
           />
         ))}
       </Box>

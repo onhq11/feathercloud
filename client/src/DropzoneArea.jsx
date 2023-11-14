@@ -36,9 +36,9 @@ export default function DropzoneArea({ handleReloadList }) {
             },
             autoHideDuration: 1000,
             style: {
-              backgroundColor: '#4cbd8b',
-              color: 'white',
-            }
+              backgroundColor: "#4cbd8b",
+              color: "white",
+            },
           });
         } else {
           enqueueSnackbar(JSON.parse(xhr.response).message, {
@@ -46,6 +46,10 @@ export default function DropzoneArea({ handleReloadList }) {
             anchorOrigin: {
               vertical: "bottom",
               horizontal: "left",
+            },
+            style: {
+              backgroundColor: "#dc4d5e",
+              color: "white",
             },
             autoHideDuration: 1000,
           });
@@ -58,8 +62,11 @@ export default function DropzoneArea({ handleReloadList }) {
       };
 
       setDownloadInProgress(true);
-      xhr.open("POST", "http://localhost:3002/api/upload");
+      xhr.open("POST", "http://localhost:3002/api/upload", true);
+      xhr.setRequestHeader("Accept", "application/json");
+      xhr.setRequestHeader("Authorization", localStorage.getItem("key"));
       xhr.send(formData);
+      handleReloadList();
     });
   }, []);
 
@@ -79,8 +86,9 @@ export default function DropzoneArea({ handleReloadList }) {
         alignItems: "center",
         flex: 1,
         color: "#64c4a8",
-        py: {xs: 4, lg: 0},
-        maxHeight: {xs: "", lg: "60vh"}
+        py: { xs: 4, lg: 0 },
+        maxHeight: { xs: "", lg: "60vh" },
+        minWidth: "300px",
       }}
       {...(!downloadInProgress && getRootProps())}
     >

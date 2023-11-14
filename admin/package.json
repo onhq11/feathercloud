@@ -1,5 +1,5 @@
 {
-  "name": "client",
+  "name": "admin",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -12,7 +12,6 @@
     "notistack": "^3.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-dropzone": "^14.2.3",
     "react-scripts": "5.0.1",
     "react-use-websocket": "^4.5.0",
     "uuid": "^9.0.1",
