@@ -79,7 +79,7 @@ const adminPort = process.env.ADMIN_PANEL_PORT;
 
 let clients = {};
 let admins = {};
-let users = {};
+let users = {users: []};
 
 fs.readFile("users.json", (err, file) => {
   if (err) {

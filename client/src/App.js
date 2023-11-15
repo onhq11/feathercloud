@@ -142,7 +142,6 @@ export default function App() {
               <FilesList
                 key={reloadList}
                 handleOpenPreview={handleOpenPreview}
-                handleReloadList={handleReloadList}
               />
             </Box>
           </Box>

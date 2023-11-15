@@ -2,11 +2,12 @@ import { Box, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import Files from "./Files";
 
-export default function FilesList({ handleOpenPreview, handleReloadList }) {
+export default function FilesList({ handleOpenPreview }) {
   const [files, setFiles] = useState([]);
+  const [reloadList, setReloadList] = useState(false)
 
   useEffect(() => {
-    fetch("http://localhost:3002/api/files", {
+    fetch("/api/files", {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
@@ -16,7 +17,7 @@ export default function FilesList({ handleOpenPreview, handleReloadList }) {
       .then((res) => {
         setFiles(res);
       });
-  }, []);
+  }, [reloadList]);
 
   return (
     <Box
@@ -46,7 +47,7 @@ export default function FilesList({ handleOpenPreview, handleReloadList }) {
             key={index}
             data={item}
             handleOpenPreview={handleOpenPreview}
-            handleReloadList={handleReloadList}
+            handleReloadList={() => setReloadList(!reloadList)}
           />
         ))}
       </Box>

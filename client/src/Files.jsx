@@ -47,7 +47,7 @@ export default function Files({ data, handleOpenPreview, handleReloadList }) {
         <Box sx={{ minWidth: "120px" }}>
           <IconButton
             onClick={() => {
-              fetch("http://localhost:3002/api/remove", {
+              fetch("/api/remove", {
                 method: "DELETE",
                 headers: {
                   Accept: "application/json",
@@ -67,7 +67,6 @@ export default function Files({ data, handleOpenPreview, handleReloadList }) {
                   return res.json();
                 })
                 .then((res) => {
-                  console.log(res);
                   enqueueSnackbar(res.message, {
                     variant: "success",
                     anchorOrigin: {

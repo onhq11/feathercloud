@@ -1,6 +1,6 @@
 start:
 	@echo "Starting server"
-	@yarn start
+	@yarn start --foreground
 
 build:
 	@echo "Executing build process"

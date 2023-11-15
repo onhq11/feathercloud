@@ -62,7 +62,7 @@ export default function DropzoneArea({ handleReloadList }) {
       };
 
       setDownloadInProgress(true);
-      xhr.open("POST", "http://localhost:3002/api/upload", true);
+      xhr.open("POST", "/api/upload", true);
       xhr.setRequestHeader("Accept", "application/json");
       xhr.setRequestHeader("Authorization", localStorage.getItem("key"));
       xhr.send(formData);

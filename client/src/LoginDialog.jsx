@@ -26,16 +26,14 @@ export default function LoginDialog({ isOpen, handleClose }) {
   const { enqueueSnackbar } = useSnackbar();
   const [inspectionState, setInspectionState] = useState(false);
 
-  const { sendJsonMessage } = useWebSocket("ws://localhost:3002/login", {
+  const { sendJsonMessage } = useWebSocket(window.location.href.replace(/^https/, 'ws').replace(/^http/, 'ws').replace(/\/$/, '') + '/login', {
     share: true,
     filter: () => false,
     onMessage: (event) => {
       const data = JSON.parse(event.data);
       switch (data.status) {
         case STATUS_OK:
-          console.log(data.key);
           localStorage.setItem("key", data.key);
-          console.log(localStorage.getItem("key"));
 
           enqueueSnackbar(INFO_KEY_SAVED, {
             variant: "success",
