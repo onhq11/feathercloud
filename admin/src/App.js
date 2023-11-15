@@ -43,7 +43,7 @@ export default function App() {
     },
   });
 
-  const { sendJsonMessage } = useWebSocket(window.location.href.replace(/^https/, 'ws').replace(/^http/, 'ws').replace(/\/$/, '') + '/admin', {
+  const { sendJsonMessage } = useWebSocket(window.location.href.replace(/^https/, 'wss').replace(/^http/, 'ws').replace(/\/$/, '') + '/admin', {
     share: true,
     filter: () => false,
     onMessage: (event) => {
