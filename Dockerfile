@@ -1,6 +1,6 @@
 FROM node:latest
+COPY . /app
 WORKDIR /app
-COPY ../../feathercloud /app
 
 RUN make init
 

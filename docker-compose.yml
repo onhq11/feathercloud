@@ -3,8 +3,9 @@ version: '3.8'
 services:
   feathercloud:
     image: onhq/feathercloud
+    container_name: feathercloud
     volumes:
-      - ${CONTAINER_VOLUME}:/app
+      - ${CONTAINER_VOLUME}:/app/uploads
     environment:
       AUTOINDEX_PATH: ${AUTOINDEX_PATH}
       WEBSERVER_PORT: ${WEBSERVER_PORT}
