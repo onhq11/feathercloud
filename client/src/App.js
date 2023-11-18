@@ -17,13 +17,14 @@ export const STATUS_INSPECT = "inspect";
 export const STATUS_INSPECT_ABORT = "inspect_abort";
 export const STATUS_WAITING = "waiting";
 export const STATUS_IDLE = "idle";
+export const STATUS_UPDATE_FILE = "update_file"
 
 export const ERROR_INTERNAL_SERVER =
   "Error occurred, contact with administrator";
 export const INFO_KEY_SAVED = "Successfully saved user key";
+export const INFO_URL_COPIED = "Successfully copied URL"
 
 export default function App() {
-  const [reloadList, setReloadList] = useState(false);
   const [openPreview, setOpenPreview] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
   const [url, setUrl] = useState("");
@@ -39,10 +40,6 @@ export default function App() {
 
   const handleOpenLogin = () => {
     setOpenLogin(true);
-  };
-
-  const handleReloadList = () => {
-    setReloadList(!reloadList);
   };
 
   const theme = createTheme({
@@ -138,9 +135,8 @@ export default function App() {
                 flexDirection: { xs: "column", lg: "row" },
               }}
             >
-              <DropzoneArea handleReloadList={handleReloadList} />
+              <DropzoneArea />
               <FilesList
-                key={reloadList}
                 handleOpenPreview={handleOpenPreview}
               />
             </Box>

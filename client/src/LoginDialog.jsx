@@ -25,6 +25,7 @@ import {
 export default function LoginDialog({ isOpen, handleClose }) {
   const { enqueueSnackbar } = useSnackbar();
   const [inspectionState, setInspectionState] = useState(false);
+  const [connectionState, setConnectionState] = useState(0)
 
   const { sendJsonMessage } = useWebSocket(window.location.href.replace(/^https/, 'wss').replace(/^http/, 'ws').replace(/\/$/, '') + '/login', {
     share: true,
@@ -83,13 +84,14 @@ export default function LoginDialog({ isOpen, handleClose }) {
     }
 
     if (isOpen) {
+      setConnectionState(connectionState + 1)
       sendJsonMessage({
         status: STATUS_WAITING,
         userId: localStorage.getItem("userId"),
       });
     } else {
       sendJsonMessage({
-        status: STATUS_IDLE,
+        status: connectionState > 0 ? STATUS_IDLE : STATUS_OK,
         userId: localStorage.getItem("userId"),
       });
     }

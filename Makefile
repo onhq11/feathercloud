@@ -10,5 +10,9 @@ install:
 	@echo "Installing dependencies"
 	@yarn && cd client && yarn && cd ../admin && yarn
 
-init: install build
+env:
+	@echo "Copying environment file"
+	@cp .env.example .env
+
+init: env install build
 	@echo "Initialization complete"

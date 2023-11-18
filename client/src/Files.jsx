@@ -1,8 +1,18 @@
 import { Box, IconButton, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
+import {INFO_URL_COPIED} from "./App";
 
 export default function Files({ data, handleOpenPreview, handleReloadList }) {
   const { enqueueSnackbar } = useSnackbar();
+
+  const formatDate = (date) => {
+    const newDate = new Date(date)
+    return `${newDate.getFullYear()}-${newDate.getMonth()+1}-${newDate.getDate()} ${newDate.getHours()}:${newDate.getMinutes()}:${newDate.getSeconds()}`
+  }
+
+  const generateUrl = (name) => {
+    return "/files/" + name
+  }
 
   return (
     <Box
@@ -11,6 +21,8 @@ export default function Files({ data, handleOpenPreview, handleReloadList }) {
         border: "1px solid lightgray",
         p: 1,
         borderRadius: "4px",
+        position: "relative",
+        overflow: "hidden"
       }}
     >
       <Box sx={{ px: 3, py: 1.5 }}>
@@ -36,12 +48,26 @@ export default function Files({ data, handleOpenPreview, handleReloadList }) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          width: "100%"
         }}
       >
         <Box>
-          <Typography sx={{ color: "#919191" }}>{data.name}</Typography>
+          <Typography sx={{ color: "#919191", cursor: "pointer" }} onClick={() => navigator.clipboard.writeText(window.location.href.substring(0, window.location.href.length - 1)+generateUrl(data.name)).then(() => {
+            enqueueSnackbar(INFO_URL_COPIED, {
+              variant: "success",
+              anchorOrigin: {
+                vertical: "bottom",
+                horizontal: "left",
+              },
+              autoHideDuration: 1000,
+              style: {
+                backgroundColor: "#4cbd8b",
+                color: "white",
+              },
+            });
+          })}>{data.name}</Typography>
           <Typography sx={{ color: "#c1c1c1", fontSize: 12, mt: 1 }}>
-            {data.last_modified}
+            {formatDate(data.last_modified)}
           </Typography>
         </Box>
         <Box sx={{ minWidth: "120px" }}>
@@ -66,19 +92,7 @@ export default function Files({ data, handleOpenPreview, handleReloadList }) {
 
                   return res.json();
                 })
-                .then((res) => {
-                  enqueueSnackbar(res.message, {
-                    variant: "success",
-                    anchorOrigin: {
-                      vertical: "bottom",
-                      horizontal: "left",
-                    },
-                    autoHideDuration: 2000,
-                    style: {
-                      backgroundColor: "#4cbd8b",
-                      color: "white",
-                    },
-                  });
+                .then(() => {
                   handleReloadList();
                 })
                 .catch((err) => {
@@ -114,7 +128,7 @@ export default function Files({ data, handleOpenPreview, handleReloadList }) {
           <IconButton
             onClick={() => {
               handleOpenPreview(
-                "/files/" + data.name,
+                generateUrl(data.name),
                 "." + data.name.split(".")[data.name.split(".").length - 1],
                 data.is_directory,
               );
@@ -134,7 +148,7 @@ export default function Files({ data, handleOpenPreview, handleReloadList }) {
           </IconButton>
           <IconButton
             onClick={() => {
-              window.open("/files/" + data.name);
+              window.open(generateUrl(data.name));
             }}
           >
             <svg

@@ -18,6 +18,7 @@ const STATUS_IDLE = "idle";
 const STATUS_INSPECT = "inspect";
 const STATUS_INSPECT_ABORT = "inspect_abort";
 const STATUS_DELETE = "delete";
+const STATUS_UPDATE_FILE = "update_file"
 
 const ERROR_FILE_UPLOAD = "There was an error uploading file";
 const ERROR_FILE_REMOVE = "There was an error removing file";
@@ -28,10 +29,6 @@ const SUCCESS_FILE_REMOVE = "File removed successfully";
 
 const IN_QUEUE = 1;
 const AUTHORIZED = 2;
-
-const LOG_ERROR = "error";
-const LOG_OK = "ok";
-const LOG_INFO = "info";
 
 const generateResponse = (status, message, other) => {
   const out = {
@@ -77,7 +74,8 @@ const autoindexPath = process.env.AUTOINDEX_PATH;
 const port = process.env.WEBSERVER_PORT;
 const adminPort = process.env.ADMIN_PANEL_PORT;
 
-let clients = {};
+let clients = {}
+let waitingClients = {};
 let admins = {};
 let users = {users: []};
 
@@ -124,6 +122,12 @@ app.post("/api/upload", (req, res) => {
           .send(generateResponse(STATUS_ERROR, ERROR_FILE_UPLOAD));
       }
 
+      Object.values(clients).map((item) => {
+        item.send(
+          generateResponse(STATUS_UPDATE_FILE, "New file added")
+        )
+      })
+
       return res
         .status(200)
         .send(generateResponse(STATUS_OK, SUCCESS_FILE_UPLOAD));
@@ -147,6 +151,12 @@ app.delete("/api/remove", (req, res) => {
           .status(500)
           .send(generateResponse(STATUS_ERROR, ERROR_FILE_REMOVE));
       }
+
+      Object.values(clients).map((item) => {
+        item.send(
+          generateResponse(STATUS_UPDATE_FILE, "File removed")
+        )
+      })
 
       return res
         .status(200)
@@ -214,8 +224,8 @@ adminApp.ws("/admin", (ws, req) => {
     const message = JSON.parse(msg);
     switch (message.status) {
       case STATUS_APPROVE:
-        if (!!clients?.[message.userId]) {
-          clients[message.userId].send(
+        if (!!waitingClients?.[message.userId]) {
+          waitingClients[message.userId].send(
             JSON.stringify({
               status: STATUS_OK,
               message: "Successfully generated key",
@@ -283,8 +293,8 @@ adminApp.ws("/admin", (ws, req) => {
 
       case STATUS_INSPECT:
       case STATUS_INSPECT_ABORT:
-        if (!!clients?.[message.userId]) {
-          clients[message.userId].send(
+        if (!!waitingClients?.[message.userId]) {
+          waitingClients[message.userId].send(
             JSON.stringify({
               status: message.status,
             }),
@@ -339,39 +349,65 @@ adminApp.ws("/admin", (ws, req) => {
 });
 
 app.ws("/login", (ws, req) => {
-  let client = "";
+  let client = "", lastStatus = "";
 
   const identifyClient = (message) => {
     client = message.userId;
-    sendInfo("Client", client, "connected");
+    lastStatus = message.status
 
     if (message.status === STATUS_WAITING) {
-      clients[client] = ws;
+      waitingClients[client] = ws;
     } else {
-      Reflect.deleteProperty(clients, client);
+      Reflect.deleteProperty(waitingClients, client);
     }
     refreshClients();
   };
 
   ws.on("message", (msg) => {
     const message = JSON.parse(msg);
+    lastStatus = message.status
+
     switch (message.status) {
       case STATUS_WAITING:
-        if (!Object.keys(clients).find((item) => message.userId === item)) {
+        if (!Object.keys(waitingClients).find((item) => message.userId === item)) {
+          sendInfo("Client", message.userId, "is waiting for approve");
           identifyClient(message);
         }
         break;
 
       case STATUS_IDLE:
+        sendInfo("Client", message.userId, "canceled permission request");
         identifyClient(message);
         break;
     }
   });
 
   ws.on("close", () => {
-    Reflect.deleteProperty(clients, client);
-    sendInfo("Client", client, "disconnected");
+    Reflect.deleteProperty(waitingClients, client);
+    if(lastStatus !== STATUS_OK) {
+      sendInfo("Client", client, "canceled permission request");
+    }
     refreshClients();
+  });
+});
+
+app.ws("/update", (ws, req) => {
+  let client = "";
+
+  const identifyClient = (message) => {
+    client = message.userId;
+    sendInfo("Client", client, "connected");
+    clients[client] = ws;
+  };
+
+  ws.on("message", (msg) => {
+    const message = JSON.parse(msg);
+    identifyClient(message);
+  });
+
+  ws.on("close", () => {
+    Reflect.deleteProperty(waitingClients, client);
+    sendInfo("Client", client, "disconnected");
   });
 });
 
@@ -380,7 +416,7 @@ const refreshClients = () => {
     item.send(
       generateResponse(STATUS_OK, null, {
         type: IN_QUEUE,
-        list: Object.keys(clients).map((client) => {
+        list: Object.keys(waitingClients).map((client) => {
           const currentUser = users.users?.find(
             (item) => item.userId === client,
           );
