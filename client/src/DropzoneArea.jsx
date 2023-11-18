@@ -3,7 +3,7 @@ import { useDropzone } from "react-dropzone";
 import { useCallback, useState } from "react";
 import { useSnackbar } from "notistack";
 
-export default function DropzoneArea({ handleReloadList }) {
+export default function DropzoneArea() {
   const { enqueueSnackbar } = useSnackbar();
   const [progress, setProgress] = useState(0);
   const [downloadInProgress, setDownloadInProgress] = useState(false);
@@ -27,20 +27,7 @@ export default function DropzoneArea({ handleReloadList }) {
       });
 
       xhr.onload = () => {
-        if (xhr.status === 200) {
-          enqueueSnackbar(JSON.parse(xhr.response).message, {
-            variant: "success",
-            anchorOrigin: {
-              vertical: "bottom",
-              horizontal: "left",
-            },
-            autoHideDuration: 1000,
-            style: {
-              backgroundColor: "#4cbd8b",
-              color: "white",
-            },
-          });
-        } else {
+        if (xhr.status !== 200) {
           enqueueSnackbar(JSON.parse(xhr.response).message, {
             variant: "error",
             anchorOrigin: {
@@ -55,7 +42,6 @@ export default function DropzoneArea({ handleReloadList }) {
           });
         }
 
-        handleReloadList();
         setDownloadInProgress(false);
         setProgress(0);
         setFileName("");
@@ -66,7 +52,6 @@ export default function DropzoneArea({ handleReloadList }) {
       xhr.setRequestHeader("Accept", "application/json");
       xhr.setRequestHeader("Authorization", localStorage.getItem("key"));
       xhr.send(formData);
-      handleReloadList();
     });
   }, []);
 
@@ -84,11 +69,11 @@ export default function DropzoneArea({ handleReloadList }) {
         justifyContent: "center",
         flexDirection: "column",
         alignItems: "center",
+        minWidth: "45%",
         flex: 1,
         color: "#64c4a8",
         py: { xs: 4, lg: 0 },
         maxHeight: { xs: "", lg: "60vh" },
-        minWidth: "300px",
       }}
       {...(!downloadInProgress && getRootProps())}
     >
