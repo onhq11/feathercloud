@@ -1,9 +1,19 @@
-import { Box, IconButton, Typography } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Tooltip,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { useSnackbar } from "notistack";
 import { INFO_URL_COPIED } from "./App";
 
 export default function Files({ data, handleOpenPreview, handleReloadList }) {
   const { enqueueSnackbar } = useSnackbar();
+  const theme = useTheme();
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up("lg"));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.up("sm"));
 
   const formatDate = (date) => {
     const newDate = new Date(date);
@@ -25,6 +35,7 @@ export default function Files({ data, handleOpenPreview, handleReloadList }) {
         borderRadius: "4px",
         position: "relative",
         overflow: "hidden",
+        minHeight: "60px",
       }}
     >
       <Box sx={{ px: 3, py: 1.5 }}>
@@ -54,34 +65,41 @@ export default function Files({ data, handleOpenPreview, handleReloadList }) {
         }}
       >
         <Box>
-          <Typography
-            sx={{ color: "#919191", cursor: "pointer" }}
-            onClick={() =>
-              navigator.clipboard
-                .writeText(
-                  window.location.href.substring(
+          <Tooltip title={data.name}>
+            <Typography
+              sx={{ color: "#919191", cursor: "pointer" }}
+              onClick={() =>
+                navigator.clipboard
+                  .writeText(
+                    window.location.href.substring(
+                      0,
+                      window.location.href.length - 1,
+                    ) + generateUrl(data.name),
+                  )
+                  .then(() => {
+                    enqueueSnackbar(INFO_URL_COPIED, {
+                      variant: "success",
+                      anchorOrigin: {
+                        vertical: "bottom",
+                        horizontal: "left",
+                      },
+                      autoHideDuration: 1000,
+                      style: {
+                        backgroundColor: "#4cbd8b",
+                        color: "white",
+                      },
+                    });
+                  })
+              }
+            >
+              {data.name.length > (isLargeScreen ? 35 : isSmallScreen ? 15 : 7)
+                ? data.name.substring(
                     0,
-                    window.location.href.length - 1,
-                  ) + generateUrl(data.name),
-                )
-                .then(() => {
-                  enqueueSnackbar(INFO_URL_COPIED, {
-                    variant: "success",
-                    anchorOrigin: {
-                      vertical: "bottom",
-                      horizontal: "left",
-                    },
-                    autoHideDuration: 1000,
-                    style: {
-                      backgroundColor: "#4cbd8b",
-                      color: "white",
-                    },
-                  });
-                })
-            }
-          >
-            {data.name}
-          </Typography>
+                    isLargeScreen ? 35 : isSmallScreen ? 15 : 7,
+                  ) + "..."
+                : data.name}
+            </Typography>
+          </Tooltip>
           <Typography sx={{ color: "#c1c1c1", fontSize: 12, mt: 1 }}>
             {formatDate(data.last_modified)}
           </Typography>

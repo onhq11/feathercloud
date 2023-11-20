@@ -63,13 +63,11 @@ export default function DropzoneArea() {
     <Box
       sx={{
         display: "flex",
-        width: "100%",
         border: "3px dashed #c4e9dd",
         textAlign: "center",
         justifyContent: "center",
         flexDirection: "column",
         alignItems: "center",
-        minWidth: "45%",
         flex: 1,
         color: "#64c4a8",
         py: { xs: 4, lg: 0 },
