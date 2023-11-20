@@ -17,12 +17,12 @@ export const STATUS_INSPECT = "inspect";
 export const STATUS_INSPECT_ABORT = "inspect_abort";
 export const STATUS_WAITING = "waiting";
 export const STATUS_IDLE = "idle";
-export const STATUS_UPDATE_FILE = "update_file"
+export const STATUS_UPDATE_FILE = "update_file";
 
 export const ERROR_INTERNAL_SERVER =
   "Error occurred, contact with administrator";
 export const INFO_KEY_SAVED = "Successfully saved user key";
-export const INFO_URL_COPIED = "Successfully copied URL"
+export const INFO_URL_COPIED = "Successfully copied URL";
 
 export default function App() {
   const [openPreview, setOpenPreview] = useState(false);
@@ -136,9 +136,7 @@ export default function App() {
               }}
             >
               <DropzoneArea />
-              <FilesList
-                handleOpenPreview={handleOpenPreview}
-              />
+              <FilesList handleOpenPreview={handleOpenPreview} />
             </Box>
           </Box>
         </Box>

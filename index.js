@@ -18,7 +18,7 @@ const STATUS_IDLE = "idle";
 const STATUS_INSPECT = "inspect";
 const STATUS_INSPECT_ABORT = "inspect_abort";
 const STATUS_DELETE = "delete";
-const STATUS_UPDATE_FILE = "update_file"
+const STATUS_UPDATE_FILE = "update_file";
 
 const ERROR_FILE_UPLOAD = "There was an error uploading file";
 const ERROR_FILE_REMOVE = "There was an error removing file";
@@ -74,10 +74,10 @@ const autoindexPath = process.env.AUTOINDEX_PATH;
 const port = process.env.WEBSERVER_PORT;
 const adminPort = process.env.ADMIN_PANEL_PORT;
 
-let clients = {}
+let clients = {};
 let waitingClients = {};
 let admins = {};
-let users = {users: []};
+let users = { users: [] };
 
 fs.readFile("users.json", (err, file) => {
   if (err) {
@@ -123,10 +123,8 @@ app.post("/api/upload", (req, res) => {
       }
 
       Object.values(clients).map((item) => {
-        item.send(
-          generateResponse(STATUS_UPDATE_FILE, "New file added")
-        )
-      })
+        item.send(generateResponse(STATUS_UPDATE_FILE, "New file added"));
+      });
 
       return res
         .status(200)
@@ -153,10 +151,8 @@ app.delete("/api/remove", (req, res) => {
       }
 
       Object.values(clients).map((item) => {
-        item.send(
-          generateResponse(STATUS_UPDATE_FILE, "File removed")
-        )
-      })
+        item.send(generateResponse(STATUS_UPDATE_FILE, "File removed"));
+      });
 
       return res
         .status(200)
@@ -349,11 +345,12 @@ adminApp.ws("/admin", (ws, req) => {
 });
 
 app.ws("/login", (ws, req) => {
-  let client = "", lastStatus = "";
+  let client = "",
+    lastStatus = "";
 
   const identifyClient = (message) => {
     client = message.userId;
-    lastStatus = message.status
+    lastStatus = message.status;
 
     if (message.status === STATUS_WAITING) {
       waitingClients[client] = ws;
@@ -365,11 +362,13 @@ app.ws("/login", (ws, req) => {
 
   ws.on("message", (msg) => {
     const message = JSON.parse(msg);
-    lastStatus = message.status
+    lastStatus = message.status;
 
     switch (message.status) {
       case STATUS_WAITING:
-        if (!Object.keys(waitingClients).find((item) => message.userId === item)) {
+        if (
+          !Object.keys(waitingClients).find((item) => message.userId === item)
+        ) {
           sendInfo("Client", message.userId, "is waiting for approve");
           identifyClient(message);
         }
@@ -384,7 +383,7 @@ app.ws("/login", (ws, req) => {
 
   ws.on("close", () => {
     Reflect.deleteProperty(waitingClients, client);
-    if(lastStatus !== STATUS_OK) {
+    if (lastStatus !== STATUS_OK) {
       sendInfo("Client", client, "canceled permission request");
     }
     refreshClients();
