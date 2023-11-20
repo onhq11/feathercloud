@@ -80,7 +80,7 @@ export default function App() {
           />
           <Box
             sx={{
-              width: "70%",
+              width: { xs: "100%", sm: "70%" },
               minHeight: "70%",
               backgroundColor: "white",
               margin: "auto",
@@ -123,7 +123,7 @@ export default function App() {
                 fontSize: 18,
               }}
             >
-              Upload files you want to share to server autoindex
+              Upload files you want to share to server
             </Typography>
             <Box
               sx={{

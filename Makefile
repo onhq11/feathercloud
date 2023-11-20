@@ -1,4 +1,4 @@
-start: build
+start:
 	@echo "Starting server"
 	@yarn start --foreground
 

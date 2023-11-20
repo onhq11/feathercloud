@@ -107,7 +107,13 @@ export default function PreviewDialog({
               </svg>
               <Typography
                 variant="h6"
-                sx={{ color: "#b1b1b1", marginTop: "50px", fontSize: 24 }}
+                sx={{
+                  color: "#b1b1b1",
+                  marginTop: "50px",
+                  fontSize: { xs: 15, lg: 24 },
+                  px: { xs: 1, sm: 4 },
+                  textAlign: "center",
+                }}
               >
                 Format is not supported to preview, you can{" "}
                 <a href={url} style={{ color: "#4cbd8b" }}>

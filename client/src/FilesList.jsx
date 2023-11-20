@@ -77,7 +77,6 @@ export default function FilesList({ handleOpenPreview }) {
     <Box
       sx={{
         flex: 1,
-        minWidth: "45%",
         gap: 2,
         display: "flex",
         flexDirection: "column",
@@ -94,7 +93,7 @@ export default function FilesList({ handleOpenPreview }) {
           flexDirection: "column",
           gap: 2,
           height: "100px",
-          overflow: "auto",
+          overflowY: "auto",
         }}
       >
         {files.map((item, index) => (
