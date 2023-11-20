@@ -25,58 +25,64 @@ import {
 export default function LoginDialog({ isOpen, handleClose }) {
   const { enqueueSnackbar } = useSnackbar();
   const [inspectionState, setInspectionState] = useState(false);
-  const [connectionState, setConnectionState] = useState(0)
+  const [connectionState, setConnectionState] = useState(0);
 
-  const { sendJsonMessage } = useWebSocket(window.location.href.replace(/^https/, 'wss').replace(/^http/, 'ws').replace(/\/$/, '') + '/login', {
-    share: true,
-    filter: () => false,
-    onMessage: (event) => {
-      const data = JSON.parse(event.data);
-      switch (data.status) {
-        case STATUS_OK:
-          localStorage.setItem("key", data.key);
+  const { sendJsonMessage } = useWebSocket(
+    window.location.href
+      .replace(/^https/, "wss")
+      .replace(/^http/, "ws")
+      .replace(/\/$/, "") + "/login",
+    {
+      share: true,
+      filter: () => false,
+      onMessage: (event) => {
+        const data = JSON.parse(event.data);
+        switch (data.status) {
+          case STATUS_OK:
+            localStorage.setItem("key", data.key);
 
-          enqueueSnackbar(INFO_KEY_SAVED, {
-            variant: "success",
-            anchorOrigin: {
-              vertical: "bottom",
-              horizontal: "left",
-            },
-            autoHideDuration: 2000,
-            style: {
-              backgroundColor: "#4cbd8b",
-              color: "white",
-            },
-          });
+            enqueueSnackbar(INFO_KEY_SAVED, {
+              variant: "success",
+              anchorOrigin: {
+                vertical: "bottom",
+                horizontal: "left",
+              },
+              autoHideDuration: 2000,
+              style: {
+                backgroundColor: "#4cbd8b",
+                color: "white",
+              },
+            });
 
-          handleClose();
-          break;
+            handleClose();
+            break;
 
-        case STATUS_INSPECT:
-          setInspectionState(true);
-          break;
+          case STATUS_INSPECT:
+            setInspectionState(true);
+            break;
 
-        case STATUS_INSPECT_ABORT:
-          setInspectionState(false);
-          break;
+          case STATUS_INSPECT_ABORT:
+            setInspectionState(false);
+            break;
 
-        default: {
-          enqueueSnackbar(data?.message || ERROR_INTERNAL_SERVER, {
-            variant: "error",
-            anchorOrigin: {
-              vertical: "bottom",
-              horizontal: "left",
-            },
-            autoHideDuration: 2000,
-            style: {
-              backgroundColor: "#dc4d5e",
-              color: "white",
-            },
-          });
+          default: {
+            enqueueSnackbar(data?.message || ERROR_INTERNAL_SERVER, {
+              variant: "error",
+              anchorOrigin: {
+                vertical: "bottom",
+                horizontal: "left",
+              },
+              autoHideDuration: 2000,
+              style: {
+                backgroundColor: "#dc4d5e",
+                color: "white",
+              },
+            });
+          }
         }
-      }
+      },
     },
-  });
+  );
 
   useEffect(() => {
     if (localStorage.getItem("userId") === null) {
@@ -84,7 +90,7 @@ export default function LoginDialog({ isOpen, handleClose }) {
     }
 
     if (isOpen) {
-      setConnectionState(connectionState + 1)
+      setConnectionState(connectionState + 1);
       sendJsonMessage({
         status: STATUS_WAITING,
         userId: localStorage.getItem("userId"),

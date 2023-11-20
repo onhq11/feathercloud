@@ -1,18 +1,20 @@
 import { Box, IconButton, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
-import {INFO_URL_COPIED} from "./App";
+import { INFO_URL_COPIED } from "./App";
 
 export default function Files({ data, handleOpenPreview, handleReloadList }) {
   const { enqueueSnackbar } = useSnackbar();
 
   const formatDate = (date) => {
-    const newDate = new Date(date)
-    return `${newDate.getFullYear()}-${newDate.getMonth()+1}-${newDate.getDate()} ${newDate.getHours()}:${newDate.getMinutes()}:${newDate.getSeconds()}`
-  }
+    const newDate = new Date(date);
+    return `${newDate.getFullYear()}-${
+      newDate.getMonth() + 1
+    }-${newDate.getDate()} ${newDate.getHours()}:${newDate.getMinutes()}:${newDate.getSeconds()}`;
+  };
 
   const generateUrl = (name) => {
-    return "/files/" + name
-  }
+    return "/files/" + name;
+  };
 
   return (
     <Box
@@ -22,7 +24,7 @@ export default function Files({ data, handleOpenPreview, handleReloadList }) {
         p: 1,
         borderRadius: "4px",
         position: "relative",
-        overflow: "hidden"
+        overflow: "hidden",
       }}
     >
       <Box sx={{ px: 3, py: 1.5 }}>
@@ -48,24 +50,38 @@ export default function Files({ data, handleOpenPreview, handleReloadList }) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          width: "100%"
+          width: "100%",
         }}
       >
         <Box>
-          <Typography sx={{ color: "#919191", cursor: "pointer" }} onClick={() => navigator.clipboard.writeText(window.location.href.substring(0, window.location.href.length - 1)+generateUrl(data.name)).then(() => {
-            enqueueSnackbar(INFO_URL_COPIED, {
-              variant: "success",
-              anchorOrigin: {
-                vertical: "bottom",
-                horizontal: "left",
-              },
-              autoHideDuration: 1000,
-              style: {
-                backgroundColor: "#4cbd8b",
-                color: "white",
-              },
-            });
-          })}>{data.name}</Typography>
+          <Typography
+            sx={{ color: "#919191", cursor: "pointer" }}
+            onClick={() =>
+              navigator.clipboard
+                .writeText(
+                  window.location.href.substring(
+                    0,
+                    window.location.href.length - 1,
+                  ) + generateUrl(data.name),
+                )
+                .then(() => {
+                  enqueueSnackbar(INFO_URL_COPIED, {
+                    variant: "success",
+                    anchorOrigin: {
+                      vertical: "bottom",
+                      horizontal: "left",
+                    },
+                    autoHideDuration: 1000,
+                    style: {
+                      backgroundColor: "#4cbd8b",
+                      color: "white",
+                    },
+                  });
+                })
+            }
+          >
+            {data.name}
+          </Typography>
           <Typography sx={{ color: "#c1c1c1", fontSize: 12, mt: 1 }}>
             {formatDate(data.last_modified)}
           </Typography>

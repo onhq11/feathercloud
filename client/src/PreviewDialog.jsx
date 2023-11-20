@@ -53,7 +53,14 @@ export default function PreviewDialog({
           Preview
         </Typography>
       </DialogTitle>
-      <DialogContent sx={{overflow: !(previewableArray.includes(format) || isDirectory) ? "hidden" : "", position: "relative"}}>
+      <DialogContent
+        sx={{
+          overflow: !(previewableArray.includes(format) || isDirectory)
+            ? "hidden"
+            : "",
+          position: "relative",
+        }}
+      >
         {previewableArray.includes(format) || isDirectory ? (
           <iframe
             title="Preview"

@@ -43,29 +43,35 @@ export default function App() {
     },
   });
 
-  const { sendJsonMessage } = useWebSocket(window.location.href.replace(/^https/, 'wss').replace(/^http/, 'ws').replace(/\/$/, '') + '/admin', {
-    share: true,
-    filter: () => false,
-    onMessage: (event) => {
-      const data = JSON.parse(event.data);
-      if (data.status === STATUS_OK) {
-        switch (data.type) {
-          case AUTHORIZED:
-            setAuthorized(data.list);
-            break;
+  const { sendJsonMessage } = useWebSocket(
+    window.location.href
+      .replace(/^https/, "wss")
+      .replace(/^http/, "ws")
+      .replace(/\/$/, "") + "/admin",
+    {
+      share: true,
+      filter: () => false,
+      onMessage: (event) => {
+        const data = JSON.parse(event.data);
+        if (data.status === STATUS_OK) {
+          switch (data.type) {
+            case AUTHORIZED:
+              setAuthorized(data.list);
+              break;
 
-          case IN_QUEUE:
-            setInQueue(data.list);
-            break;
+            case IN_QUEUE:
+              setInQueue(data.list);
+              break;
 
-          default: {
-            setInQueue([]);
-            setAuthorized([]);
+            default: {
+              setInQueue([]);
+              setAuthorized([]);
+            }
           }
         }
-      }
+      },
     },
-  });
+  );
 
   const handleDelete = (data) => {
     sendJsonMessage({
