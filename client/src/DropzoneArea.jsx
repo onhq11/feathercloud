@@ -83,7 +83,11 @@ export default function DropzoneArea({ path, handleUpdateGlobalInProgress }) {
         return newData;
       });
 
-      xhr.open("POST", "/api/upload/" + currentPath, true);
+      xhr.open(
+        "POST",
+        "/api/upload/" + currentPath + item.path.replace(item.name + "/", ""),
+        true,
+      );
       xhr.setRequestHeader("Accept", "application/json");
       xhr.setRequestHeader("Authorization", localStorage.getItem("key"));
       xhr.send(formData);

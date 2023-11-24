@@ -106,6 +106,12 @@ fs.readFile("users.json", (err, file) => {
   users = JSON.parse(file.toString());
 });
 
+const createDirectoryIfNotExists = async (directory) => {
+  if (!fs.existsSync(directory)) {
+    fs.mkdirSync(directory, { recursive: true });
+  }
+};
+
 const app = express();
 const adminApp = express();
 const storage = multer.diskStorage({
@@ -113,6 +119,9 @@ const storage = multer.diskStorage({
     const uploadPath = path
       .join(autoindexPath, req.params[0])
       .replace(/index/g, "");
+
+    createDirectoryIfNotExists(uploadPath);
+
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {

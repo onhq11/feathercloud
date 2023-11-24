@@ -51,6 +51,7 @@ export default function Files({
         overflow: "hidden",
         minHeight: "60px",
         cursor: "pointer",
+        transition: "0.2s",
         "&:hover": {
           boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.1)",
         },
