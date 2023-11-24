@@ -1,28 +1,56 @@
 import { Box, Button, LinearProgress, Typography } from "@mui/material";
 import { useDropzone } from "react-dropzone";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSnackbar } from "notistack";
+import UploadDialog from "./UploadDialog";
 
-export default function DropzoneArea() {
+export default function DropzoneArea({ path, handleUpdateGlobalInProgress }) {
   const { enqueueSnackbar } = useSnackbar();
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState([]);
   const [downloadInProgress, setDownloadInProgress] = useState(false);
-  const [fileName, setFileName] = useState("");
+  const [singleFile, setSingleFile] = useState(false);
+  const [fileName, setFileName] = useState([]);
+  const [openUploadModal, setOpenUploadModal] = useState(false);
+  const [currentPath, setCurrentPath] = useState(path);
+
+  useEffect(() => {
+    handleUpdateGlobalInProgress(downloadInProgress);
+  }, [downloadInProgress]);
+
+  const handleEmptyUploadObject = () => {
+    setProgress([]);
+    setFileName([]);
+    setDownloadInProgress(false);
+    setSingleFile(false);
+  };
+
+  useEffect(() => {
+    setCurrentPath(path);
+  }, [path]);
 
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles.length <= 0) return;
+    if (downloadInProgress) return;
 
-    acceptedFiles.map((item) => {
+    const tempProgress = [];
+    const tempFileName = [];
+
+    acceptedFiles.map((item, index) => {
       const formData = new FormData();
       formData.append("file", item);
 
       const xhr = new XMLHttpRequest();
+      tempFileName[index] = item?.name;
 
       xhr.upload.addEventListener("progress", (event) => {
         if (event.lengthComputable) {
-          setFileName(acceptedFiles[0]?.name);
           const percentage = (event.loaded / event.total) * 100;
-          setProgress(Math.round(percentage));
+
+          setProgress((item) => {
+            const newData = [...item];
+            newData[index] = Math.round(percentage);
+            return newData;
+          });
         }
       });
 
@@ -42,17 +70,34 @@ export default function DropzoneArea() {
           });
         }
 
-        setDownloadInProgress(false);
-        setProgress(0);
-        setFileName("");
+        setProgress((item) => {
+          const newData = [...item];
+          newData[index] = 100;
+          return newData;
+        });
       };
 
-      setDownloadInProgress(true);
-      xhr.open("POST", "/api/upload", true);
+      setProgress((item) => {
+        const newData = [...item];
+        newData[index] = 100;
+        return newData;
+      });
+
+      xhr.open("POST", "/api/upload/" + currentPath, true);
       xhr.setRequestHeader("Accept", "application/json");
       xhr.setRequestHeader("Authorization", localStorage.getItem("key"));
       xhr.send(formData);
     });
+
+    setFileName(tempFileName);
+    setProgress(tempProgress);
+    setDownloadInProgress(true);
+
+    if (acceptedFiles.length > 1) {
+      setOpenUploadModal(true);
+    } else {
+      setSingleFile(true);
+    }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -75,6 +120,13 @@ export default function DropzoneArea() {
       }}
       {...(!downloadInProgress && getRootProps())}
     >
+      <UploadDialog
+        isOpen={openUploadModal}
+        handleClose={() => setOpenUploadModal(false)}
+        progress={progress}
+        fileName={fileName}
+        handleEmptyUploadObject={handleEmptyUploadObject}
+      />
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="64"
@@ -86,7 +138,7 @@ export default function DropzoneArea() {
           d="M13.942 6.039a2.5 2.5 0 0 0-3.085-2.955a3 3 0 0 0-5.737.075A4 4 0 1 0 4 11h2v3h4v-3h3.5a2.5 2.5 0 0 0 .442-4.961zM9 10v3H7v-3H4.5L8 6.5l3.5 3.5H9z"
         />
       </svg>
-      {downloadInProgress ? (
+      {singleFile ? (
         <>
           <Typography sx={{ fontWeight: 400, fontSize: 25 }}>
             Uploading...

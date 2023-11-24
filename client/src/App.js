@@ -21,6 +21,8 @@ export const STATUS_UPDATE_FILE = "update_file";
 
 export const ERROR_INTERNAL_SERVER =
   "Error occurred, contact with administrator";
+export const ERROR_COMPLETE_FIELDS = "Complete required fields";
+
 export const INFO_KEY_SAVED = "Successfully saved user key";
 export const INFO_URL_COPIED = "Successfully copied URL";
 
@@ -30,6 +32,16 @@ export default function App() {
   const [url, setUrl] = useState("");
   const [format, setFormat] = useState("");
   const [isDirectory, setIsDirectory] = useState(false);
+  const [path, setPath] = useState("");
+  const [uploadInProgress, setUploadInProgress] = useState(false);
+
+  const handleChangeInProgress = (value) => {
+    setUploadInProgress(value);
+  };
+
+  const handleChangePath = (path) => {
+    setPath(path);
+  };
 
   const handleOpenPreview = (url, format, isDirectory) => {
     setUrl(url);
@@ -46,6 +58,10 @@ export default function App() {
     palette: {
       success: {
         main: "#4cbd8b",
+        contrastText: "#fff",
+      },
+      normal: {
+        main: "#444",
         contrastText: "#fff",
       },
     },
@@ -135,8 +151,16 @@ export default function App() {
                 flexDirection: { xs: "column", lg: "row" },
               }}
             >
-              <DropzoneArea />
-              <FilesList handleOpenPreview={handleOpenPreview} />
+              <DropzoneArea
+                key={path}
+                path={path}
+                handleUpdateGlobalInProgress={handleChangeInProgress}
+              />
+              <FilesList
+                handleOpenPreview={handleOpenPreview}
+                handleChangeGlobalPath={handleChangePath}
+                uploadInProgress={uploadInProgress}
+              />
             </Box>
           </Box>
         </Box>
