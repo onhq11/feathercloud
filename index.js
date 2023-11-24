@@ -24,8 +24,16 @@ const ERROR_FILE_UPLOAD = "There was an error uploading file";
 const ERROR_FILE_REMOVE = "There was an error removing file";
 const ERROR_FORBIDDEN = "You do not have permissions";
 const ERROR_INTERNAL_SERVER = "Internal server error";
+const ERROR_CREATE_FOLDER = "There was an error creating folder";
+
 const SUCCESS_FILE_UPLOAD = "File uploaded successfully";
 const SUCCESS_FILE_REMOVE = "File removed successfully";
+const SUCCESS_CREATE_FOLDER = "Folder created successfully";
+
+const WS_SUCCESS_FILE_ADDED = "New file added";
+const WS_SUCCESS_FILE_REMOVED = "File removed";
+const WS_SUCCESS_FOLDER_CREATED = "Folder created";
+const WS_SUCCESS_GENERATED_KEY = "Successfully generated key";
 
 const IN_QUEUE = 1;
 const AUTHORIZED = 2;
@@ -39,12 +47,26 @@ const generateResponse = (status, message, other) => {
   return JSON.stringify(out);
 };
 
-const sendLog = (value, ...other) => {
+const returnDate = () => {
   const date = new Date();
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds();
+
+  return `${year > 9 ? year : "0" + year}-${month > 9 ? month : "0" + month}-${
+    day > 9 ? day : "0" + day
+  } ${hours > 9 ? hours : "0" + hours}:${
+    minutes > 9 ? minutes : "0" + minutes
+  }:${seconds > 9 ? seconds : "0" + seconds}`;
+};
+
+const sendLog = (value, ...other) => {
   console.log(
-    `[\x1b[35m${date.getFullYear()}-${
-      date.getMonth() + 1
-    }-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}\x1b[0m] [\x1b[32mOK\x1b[0m] ${value}`,
+    `[\x1b[35m${returnDate()}\x1b[0m] [\x1b[32mOK\x1b[0m] ${value}`,
     ...other,
   );
 };
@@ -52,9 +74,7 @@ const sendLog = (value, ...other) => {
 const sendError = (value, ...other) => {
   const date = new Date();
   console.log(
-    `[\x1b[35m${date.getFullYear()}-${
-      date.getMonth() + 1
-    }-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}\x1b[0m] [\x1b[31mERROR\x1b[0m] ${value}`,
+    `[\x1b[35m${returnDate()}\x1b[0m] [\x1b[31mERROR\x1b[0m] ${value}`,
     ...other,
   );
 };
@@ -62,9 +82,7 @@ const sendError = (value, ...other) => {
 const sendInfo = (value, ...other) => {
   const date = new Date();
   console.log(
-    `[\x1b[35m${date.getFullYear()}-${
-      date.getMonth() + 1
-    }-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}\x1b[0m] [\x1b[34mINFO\x1b[0m] ${value}`,
+    `[\x1b[35m${returnDate()}\x1b[0m] [\x1b[34mINFO\x1b[0m] ${value}`,
     ...other,
   );
 };
@@ -91,15 +109,20 @@ fs.readFile("users.json", (err, file) => {
 const app = express();
 const adminApp = express();
 const storage = multer.diskStorage({
-  destination: autoindexPath,
+  destination: (req, file, cb) => {
+    const uploadPath = path
+      .join(autoindexPath, req.params[0])
+      .replace(/index/g, "");
+    cb(null, uploadPath);
+  },
   filename: (req, file, cb) => {
     const uniqueFileName = file.originalname;
     cb(null, uniqueFileName);
   },
 });
 
-const expressWs = require("express-ws")(app);
-const expressWsAdmin = require("express-ws")(adminApp);
+require("express-ws")(app);
+require("express-ws")(adminApp);
 const upload = multer({ storage });
 const fileUpload = upload.single("file");
 
@@ -109,7 +132,7 @@ app.use(express.static("client/build"));
 adminApp.use(express.static("admin/build"));
 app.use(cors());
 
-app.post("/api/upload", (req, res) => {
+app.post("/api/upload/*", (req, res) => {
   const user = users.users.find(
     (item) => item.key === req.headers.authorization,
   );
@@ -123,7 +146,7 @@ app.post("/api/upload", (req, res) => {
       }
 
       Object.values(clients).map((item) => {
-        item.send(generateResponse(STATUS_UPDATE_FILE, "New file added"));
+        item.send(generateResponse(STATUS_UPDATE_FILE, WS_SUCCESS_FILE_ADDED));
       });
 
       return res
@@ -137,12 +160,17 @@ app.post("/api/upload", (req, res) => {
   }
 });
 
-app.delete("/api/remove", (req, res) => {
+app.delete("/api/remove/*", (req, res) => {
   const user = users.users.find(
     (item) => item.key === req.headers.authorization,
   );
   if (!!user && user.permissions.includes(FILE_DELETE)) {
-    fs.rm(autoindexPath + req.body.filename, (err) => {
+    const requestedPath = req.params[0];
+    const removePath = path
+      .join(autoindexPath, requestedPath)
+      .replace(/index/g, "");
+
+    fs.rm(removePath, { recursive: true }, (err) => {
       if (err) {
         sendError(err.message || err);
         return res
@@ -151,7 +179,9 @@ app.delete("/api/remove", (req, res) => {
       }
 
       Object.values(clients).map((item) => {
-        item.send(generateResponse(STATUS_UPDATE_FILE, "File removed"));
+        item.send(
+          generateResponse(STATUS_UPDATE_FILE, WS_SUCCESS_FILE_REMOVED),
+        );
       });
 
       return res
@@ -165,10 +195,15 @@ app.delete("/api/remove", (req, res) => {
   }
 });
 
-app.get("/api/files", (req, res) => {
+app.get("/api/files/*", (req, res) => {
   let out = [];
 
-  fs.readdir(autoindexPath, (err, files) => {
+  const requestedDirectory = req.params[0];
+  const directoryToRead = path
+    .join(autoindexPath, requestedDirectory)
+    .replace(/index/g, "");
+
+  fs.readdir(directoryToRead, (err, files) => {
     if (err) {
       sendError("Error reading directory:", err.message || err);
       return;
@@ -176,7 +211,7 @@ app.get("/api/files", (req, res) => {
 
     Promise.all(
       files.map((file) => {
-        const filePath = path.join(autoindexPath, file);
+        const filePath = path.join(directoryToRead, file);
 
         return fs.promises
           .stat(filePath)
@@ -205,6 +240,36 @@ app.get("/api/files", (req, res) => {
   });
 });
 
+app.get("/api/create/*", (req, res) => {
+  const user = users.users.find(
+    (item) => item.key === req.headers.authorization,
+  );
+  if (!!user && user.permissions.includes(FILE_UPLOAD)) {
+    fs.mkdir(`${autoindexPath}/${req.params[0]}`, (err) => {
+      if (err) {
+        sendError(err.message || err);
+        return res
+          .status(500)
+          .send(generateResponse(STATUS_ERROR, ERROR_CREATE_FOLDER));
+      }
+
+      Object.values(clients).map((item) => {
+        item.send(
+          generateResponse(STATUS_UPDATE_FILE, WS_SUCCESS_FOLDER_CREATED),
+        );
+      });
+
+      return res
+        .status(200)
+        .send(generateResponse(STATUS_OK, SUCCESS_CREATE_FOLDER));
+    });
+  } else {
+    return res
+      .status(403)
+      .send(generateResponse(STATUS_FORBIDDEN, ERROR_FORBIDDEN));
+  }
+});
+
 app.get("/", (req, res) => {
   res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
 });
@@ -224,7 +289,7 @@ adminApp.ws("/admin", (ws, req) => {
           waitingClients[message.userId].send(
             JSON.stringify({
               status: STATUS_OK,
-              message: "Successfully generated key",
+              message: WS_SUCCESS_GENERATED_KEY,
               key: message.key,
               friendlyName: message.friendlyName,
             }),
