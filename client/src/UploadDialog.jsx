@@ -41,7 +41,7 @@ export default function UploadDialog({
       handleClose();
       handleEmptyUploadObject();
     }
-  }, [...progress]);
+  }, [...progress, ...fileName]);
 
   return (
     <Dialog open={isOpen} maxWidth="xl">
