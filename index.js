@@ -118,7 +118,7 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = path
       .join(autoindexPath, req.params[0])
-      .replace(/index/g, "");
+      .replace(/~/g, "");
 
     createDirectoryIfNotExists(uploadPath);
 
@@ -177,7 +177,7 @@ app.delete("/api/remove/*", (req, res) => {
     const requestedPath = req.params[0];
     const removePath = path
       .join(autoindexPath, requestedPath)
-      .replace(/index/g, "");
+      .replace(/~/g, "");
 
     fs.rm(removePath, { recursive: true }, (err) => {
       if (err) {
@@ -210,7 +210,7 @@ app.get("/api/files/*", (req, res) => {
   const requestedDirectory = req.params[0];
   const directoryToRead = path
     .join(autoindexPath, requestedDirectory)
-    .replace(/index/g, "");
+    .replace(/~/g, "");
 
   fs.readdir(directoryToRead, (err, files) => {
     if (err) {
@@ -254,24 +254,28 @@ app.get("/api/create/*", (req, res) => {
     (item) => item.key === req.headers.authorization,
   );
   if (!!user && user.permissions.includes(FILE_UPLOAD)) {
-    fs.mkdir(`${autoindexPath}/${req.params[0]}`, (err) => {
-      if (err) {
-        sendError(err.message || err);
+    fs.mkdir(
+      `${autoindexPath}/${req.params[0]}`,
+      { recursive: true },
+      (err) => {
+        if (err) {
+          sendError(err.message || err);
+          return res
+            .status(500)
+            .send(generateResponse(STATUS_ERROR, ERROR_CREATE_FOLDER));
+        }
+
+        Object.values(clients).map((item) => {
+          item.send(
+            generateResponse(STATUS_UPDATE_FILE, WS_SUCCESS_FOLDER_CREATED),
+          );
+        });
+
         return res
-          .status(500)
-          .send(generateResponse(STATUS_ERROR, ERROR_CREATE_FOLDER));
-      }
-
-      Object.values(clients).map((item) => {
-        item.send(
-          generateResponse(STATUS_UPDATE_FILE, WS_SUCCESS_FOLDER_CREATED),
-        );
-      });
-
-      return res
-        .status(200)
-        .send(generateResponse(STATUS_OK, SUCCESS_CREATE_FOLDER));
-    });
+          .status(200)
+          .send(generateResponse(STATUS_OK, SUCCESS_CREATE_FOLDER));
+      },
+    );
   } else {
     return res
       .status(403)

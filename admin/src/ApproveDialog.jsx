@@ -28,16 +28,20 @@ export default function ApproveDialog({
 }) {
   const [friendlyName, setFriendlyName] = useState(data?.friendlyName ?? "");
   const [checkboxState, setCheckboxState] = useState({
-    upload: data?.currentPermissions?.includes("file.upload") ?? false,
-    delete: data?.currentPermissions?.includes("file.delete") ?? false,
+    file_upload: data?.currentPermissions?.includes("file.upload") ?? false,
+    file_delete: data?.currentPermissions?.includes("file.delete") ?? false,
+    paste_create: data?.currentPermissions?.includes("paste.create") ?? false,
+    paste_delete: data?.currentPermissions?.includes("paste.delete") ?? false,
   });
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     setFriendlyName(data?.friendlyName || "");
     setCheckboxState({
-      upload: data?.currentPermissions?.includes("file.upload") ?? false,
-      delete: data?.currentPermissions?.includes("file.delete") ?? false,
+      file_upload: data?.currentPermissions?.includes("file.upload") ?? false,
+      file_delete: data?.currentPermissions?.includes("file.delete") ?? false,
+      paste_create: data?.currentPermissions?.includes("paste.create") ?? false,
+      paste_delete: data?.currentPermissions?.includes("paste.delete") ?? false,
     });
 
     if (!!data.userId) {
@@ -158,8 +162,8 @@ export default function ApproveDialog({
             control={
               <Checkbox
                 color="success"
-                checked={checkboxState.upload}
-                onChange={(event) => handleChangeCheckbox(event, "upload")}
+                checked={checkboxState.file_upload}
+                onChange={(event) => handleChangeCheckbox(event, "file_upload")}
               />
             }
             label="File Upload"
@@ -168,11 +172,40 @@ export default function ApproveDialog({
             control={
               <Checkbox
                 color="success"
-                checked={checkboxState.delete}
-                onChange={(event) => handleChangeCheckbox(event, "delete")}
+                checked={checkboxState.file_delete}
+                onChange={(event) => handleChangeCheckbox(event, "file_delete")}
               />
             }
             label="File Delete"
+          />
+        </FormGroup>
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Paste Permissions
+        </Typography>
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Checkbox
+                color="success"
+                checked={checkboxState.create_paste}
+                onChange={(event) =>
+                  handleChangeCheckbox(event, "create_paste")
+                }
+              />
+            }
+            label="Create paste"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                color="success"
+                checked={checkboxState.delete_paste}
+                onChange={(event) =>
+                  handleChangeCheckbox(event, "delete_paste")
+                }
+              />
+            }
+            label="Delete paste"
           />
         </FormGroup>
       </DialogContent>
