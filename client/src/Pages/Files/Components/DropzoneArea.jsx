@@ -2,7 +2,7 @@ import { Box, Button, LinearProgress, Typography } from "@mui/material";
 import { useDropzone } from "react-dropzone";
 import { useCallback, useEffect, useState } from "react";
 import { useSnackbar } from "notistack";
-import UploadDialog from "./UploadDialog";
+import UploadDialog from "../../../Dialogs/Files/UploadDialog";
 
 export default function DropzoneArea({ path, handleUpdateGlobalInProgress }) {
   const { enqueueSnackbar } = useSnackbar();
@@ -120,7 +120,7 @@ export default function DropzoneArea({ path, handleUpdateGlobalInProgress }) {
         flex: 1,
         color: "#64c4a8",
         py: { xs: 4, lg: 0 },
-        maxHeight: { xs: "", lg: "60vh" },
+        maxHeight: { xs: "", lg: "55vh" },
       }}
       {...(!downloadInProgress && getRootProps())}
     >

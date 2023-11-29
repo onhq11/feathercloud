@@ -20,7 +20,7 @@ import {
   STATUS_INSPECT_ABORT,
   STATUS_OK,
   STATUS_WAITING,
-} from "./App";
+} from "../App";
 
 export default function LoginDialog({ isOpen, handleClose }) {
   const { enqueueSnackbar } = useSnackbar();

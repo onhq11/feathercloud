@@ -22,7 +22,7 @@ import {
   STATUS_INSPECT_ABORT,
   STATUS_OK,
   STATUS_WAITING,
-} from "./App";
+} from "../../App";
 
 export default function FolderDialog({ isOpen, handleClose, path }) {
   const [name, setName] = useState("");
@@ -33,7 +33,7 @@ export default function FolderDialog({ isOpen, handleClose, path }) {
   }, [isOpen]);
 
   const handleSubmit = () => {
-    if (!(name.length > 1)) {
+    if (!(name.length > 0)) {
       enqueueSnackbar(ERROR_COMPLETE_FIELDS, {
         variant: "error",
         anchorOrigin: {
@@ -49,7 +49,7 @@ export default function FolderDialog({ isOpen, handleClose, path }) {
       return;
     }
 
-    fetch(`/api/create/${path !== "index" ? path + "/" : ""}${name}`, {
+    fetch(`/api/create/${path !== "~" ? path + "/" : ""}${name}`, {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",

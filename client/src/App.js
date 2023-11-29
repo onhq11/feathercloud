@@ -3,14 +3,20 @@ import {
   createTheme,
   IconButton,
   ThemeProvider,
+  Tooltip,
   Typography,
 } from "@mui/material";
-import DropzoneArea from "./DropzoneArea";
-import FilesList from "./FilesList";
+import DropzoneArea from "./Pages/Files/Components/DropzoneArea";
+import FilesList from "./Pages/Files/Components/FilesList";
 import { SnackbarProvider } from "notistack";
-import { useState } from "react";
-import PreviewDialog from "./PreviewDialog";
-import LoginDialog from "./LoginDialog";
+import { useEffect, useState } from "react";
+import PreviewDialog from "./Dialogs/Files/PreviewDialog";
+import LoginDialog from "./Dialogs/LoginDialog";
+import { useSwipeable } from "react-swipeable";
+import Header from "./Pages/Files/Header";
+import Files from "./Pages/Files/Files";
+import Paste from "./Pages/Paste/Paste";
+import Navigation from "./Navigation";
 
 export const STATUS_OK = "ok";
 export const STATUS_INSPECT = "inspect";
@@ -34,6 +40,51 @@ export default function App() {
   const [isDirectory, setIsDirectory] = useState(false);
   const [path, setPath] = useState("");
   const [uploadInProgress, setUploadInProgress] = useState(false);
+  const [currentTab, setCurrentTab] = useState(0);
+  const [sliderLeft, setSliderLeft] = useState(0);
+  const [sliderOpacity, setSliderOpacity] = useState(1);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "ArrowRight") {
+        handleTabChange(1);
+      } else if (event.key === "ArrowLeft") {
+        handleTabChange(0);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  const handlers = useSwipeable({
+    onSwiped: (eventData) => {
+      if (eventData.dir === "Left") {
+        handleTabChange(1);
+      } else if (eventData.dir === "Right") {
+        handleTabChange(0);
+      }
+    },
+  });
+
+  const handleTabChange = (tab) => {
+    switch (tab) {
+      case 0:
+        setCurrentTab(0);
+        setSliderLeft(0);
+        setSliderOpacity(1);
+        break;
+
+      case 1:
+        setCurrentTab(1);
+        setSliderLeft(-100);
+        setSliderOpacity(0);
+        break;
+    }
+  };
 
   const handleChangeInProgress = (value) => {
     setUploadInProgress(value);
@@ -74,94 +125,103 @@ export default function App() {
         autoHideDuration={2000}
         style={{ paddingRight: "50px" }}
       >
+        <PreviewDialog
+          isOpen={openPreview}
+          handleClose={() => setOpenPreview(false)}
+          url={url}
+          format={format}
+          isDirectory={isDirectory}
+        />
+        <LoginDialog
+          isOpen={openLogin}
+          handleClose={() => setOpenLogin(false)}
+        />
         <Box
           sx={{
+            width: { xs: "100%", sm: "70%" },
+            height: { xs: "100%", sm: "80%" },
             display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            width: "100vw",
-            height: "100vh",
+
+            flexDirection: "column",
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
           }}
         >
-          <PreviewDialog
-            isOpen={openPreview}
-            handleClose={() => setOpenPreview(false)}
-            url={url}
-            format={format}
-            isDirectory={isDirectory}
-          />
-          <LoginDialog
-            isOpen={openLogin}
-            handleClose={() => setOpenLogin(false)}
-          />
           <Box
             sx={{
-              width: { xs: "100%", sm: "70%" },
-              minHeight: "70%",
               backgroundColor: "white",
-              margin: "auto",
               borderRadius: "15px",
               boxShadow: "0px 0px 24px 22px rgba(216, 240, 234, 1)",
               py: 4,
               px: 4.5,
-              flexDirection: "column",
-              display: "flex",
+              flex: 1,
             }}
+            {...handlers}
           >
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Typography
-                variant="h4"
-                sx={{ color: "#4dbc9d", fontWeight: "bold", fontSize: 30 }}
-              >
-                Upload files
-              </Typography>
-              <IconButton size="small" onClick={handleOpenLogin}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill="#4cbd8b"
-                    d="M12 12q-1.65 0-2.825-1.175T8 8q0-1.65 1.175-2.825T12 4q1.65 0 2.825 1.175T16 8q0 1.65-1.175 2.825T12 12Zm-8 8v-2.8q0-.85.438-1.563T5.6 14.55q1.55-.775 3.15-1.163T12 13q1.65 0 3.25.388t3.15 1.162q.725.375 1.163 1.088T20 17.2V20H4Z"
-                  />
-                </svg>
-              </IconButton>
-            </Box>
-            <Typography
-              variant="h6"
-              sx={{
-                color: "#a8a8a8",
-                fontWeight: 600,
-                mt: 1,
-                mb: 4,
-                fontSize: 18,
-              }}
-            >
-              Upload files you want to share to server
-            </Typography>
             <Box
               sx={{
                 display: "flex",
                 flex: 1,
-                gap: 5,
-                height: "80%",
-                flexWrap: "wrap",
-                flexDirection: { xs: "column", lg: "row" },
+                position: "relative",
+                overflowX: "hidden",
+                height: "100%",
               }}
             >
-              <DropzoneArea
-                key={path}
-                path={path}
-                handleUpdateGlobalInProgress={handleChangeInProgress}
-              />
-              <FilesList
-                handleOpenPreview={handleOpenPreview}
-                handleChangeGlobalPath={handleChangePath}
-                uploadInProgress={uploadInProgress}
-              />
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  position: "absolute",
+                  width: "100%",
+                  height: "100%",
+                  transform: `translateX(${sliderLeft}%)`,
+                  transition: "0.3s",
+                  opacity: sliderOpacity,
+                }}
+              >
+                <Header handleOpenLogin={handleOpenLogin} />
+                <Files
+                  handleChangeInProgress={handleChangeInProgress}
+                  handleChangePath={handleChangePath}
+                  handleOpenPreview={handleOpenPreview}
+                  uploadInProgress={uploadInProgress}
+                  path={path}
+                />
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  flex: 1,
+                  position: "absolute",
+                  width: "100%",
+                  height: "100%",
+                  left: "100%",
+                  transform: `translateX(${sliderLeft}%)`,
+                  transition: "0.3s",
+                  opacity: +!sliderOpacity,
+                }}
+              >
+                <Header handleOpenLogin={handleOpenLogin} />
+                <Paste />
+              </Box>
             </Box>
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
+            <Navigation
+              handleTabChange={handleTabChange}
+              currentTab={currentTab}
+              sliderLeft={sliderLeft}
+            />
           </Box>
         </Box>
       </SnackbarProvider>
