@@ -85,7 +85,11 @@ export default function DropzoneArea({ path, handleUpdateGlobalInProgress }) {
 
       xhr.open(
         "POST",
-        "/api/upload/" + currentPath + item.path.replace(item.name + "/", ""),
+        "/api/file/upload/" +
+          currentPath +
+          (item.path.substring(0, 1) === "/"
+            ? item.path.replace(item.name + "/", "")
+            : "/" + item.path.replace(item.name, "")),
         true,
       );
       xhr.setRequestHeader("Accept", "application/json");
@@ -120,7 +124,7 @@ export default function DropzoneArea({ path, handleUpdateGlobalInProgress }) {
         flex: 1,
         color: "#64c4a8",
         py: { xs: 4, lg: 0 },
-        maxHeight: { xs: "", lg: "55vh" },
+        maxWidth: { xs: "100%", lg: "50%" },
       }}
       {...(!downloadInProgress && getRootProps())}
     >

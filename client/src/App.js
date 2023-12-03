@@ -1,19 +1,10 @@
-import {
-  Box,
-  createTheme,
-  IconButton,
-  ThemeProvider,
-  Tooltip,
-  Typography,
-} from "@mui/material";
-import DropzoneArea from "./Pages/Files/Components/DropzoneArea";
-import FilesList from "./Pages/Files/Components/FilesList";
+import { Box, createTheme, ThemeProvider } from "@mui/material";
 import { SnackbarProvider } from "notistack";
 import { useEffect, useState } from "react";
-import PreviewDialog from "./Dialogs/Files/PreviewDialog";
 import LoginDialog from "./Dialogs/LoginDialog";
 import { useSwipeable } from "react-swipeable";
-import Header from "./Pages/Files/Header";
+import FilesHeader from "./Pages/Files/Header";
+import PasteHeader from "./Pages/Paste/Header";
 import Files from "./Pages/Files/Files";
 import Paste from "./Pages/Paste/Paste";
 import Navigation from "./Navigation";
@@ -31,18 +22,18 @@ export const ERROR_COMPLETE_FIELDS = "Complete required fields";
 
 export const INFO_KEY_SAVED = "Successfully saved user key";
 export const INFO_URL_COPIED = "Successfully copied URL";
+export const INFO_PASTE_COPIED = "Successfully copied paste";
 
 export default function App() {
-  const [openPreview, setOpenPreview] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
-  const [url, setUrl] = useState("");
-  const [format, setFormat] = useState("");
-  const [isDirectory, setIsDirectory] = useState(false);
-  const [path, setPath] = useState("");
-  const [uploadInProgress, setUploadInProgress] = useState(false);
   const [currentTab, setCurrentTab] = useState(0);
   const [sliderLeft, setSliderLeft] = useState(0);
   const [sliderOpacity, setSliderOpacity] = useState(1);
+  const [reloadList, setReloadList] = useState(false);
+
+  const handleReloadList = () => {
+    setReloadList(!reloadList);
+  };
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -53,10 +44,10 @@ export default function App() {
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
@@ -86,21 +77,6 @@ export default function App() {
     }
   };
 
-  const handleChangeInProgress = (value) => {
-    setUploadInProgress(value);
-  };
-
-  const handleChangePath = (path) => {
-    setPath(path);
-  };
-
-  const handleOpenPreview = (url, format, isDirectory) => {
-    setUrl(url);
-    setFormat(format);
-    setOpenPreview(true);
-    setIsDirectory(isDirectory);
-  };
-
   const handleOpenLogin = () => {
     setOpenLogin(true);
   };
@@ -116,6 +92,35 @@ export default function App() {
         contrastText: "#fff",
       },
     },
+    components: {
+      MuiChip: {
+        styleOverrides: {
+          root: {
+            borderRadius: "6px",
+            height: "24px",
+          },
+          label: {
+            padding: "0px 7px",
+            fontWeight: "bold",
+            fontSize: "12px",
+          },
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: "9px",
+          },
+        },
+      },
+      MuiDialog: {
+        styleOverrides: {
+          paper: {
+            borderRadius: "9px",
+          },
+        },
+      },
+    },
   });
 
   return (
@@ -125,23 +130,15 @@ export default function App() {
         autoHideDuration={2000}
         style={{ paddingRight: "50px" }}
       >
-        <PreviewDialog
-          isOpen={openPreview}
-          handleClose={() => setOpenPreview(false)}
-          url={url}
-          format={format}
-          isDirectory={isDirectory}
-        />
         <LoginDialog
           isOpen={openLogin}
           handleClose={() => setOpenLogin(false)}
         />
         <Box
           sx={{
-            width: { xs: "100%", sm: "70%" },
-            height: { xs: "100%", sm: "80%" },
+            width: { xs: "100%", sm: "80%" },
+            height: { xs: "100%", sm: "90%" },
             display: "flex",
-
             flexDirection: "column",
             position: "absolute",
             top: "50%",
@@ -181,13 +178,11 @@ export default function App() {
                   opacity: sliderOpacity,
                 }}
               >
-                <Header handleOpenLogin={handleOpenLogin} />
+                <FilesHeader handleOpenLogin={handleOpenLogin} />
                 <Files
-                  handleChangeInProgress={handleChangeInProgress}
-                  handleChangePath={handleChangePath}
-                  handleOpenPreview={handleOpenPreview}
-                  uploadInProgress={uploadInProgress}
-                  path={path}
+                  handleReloadList={handleReloadList}
+                  reloadList={reloadList}
+                  isActive={currentTab === 0}
                 />
               </Box>
               <Box
@@ -204,8 +199,12 @@ export default function App() {
                   opacity: +!sliderOpacity,
                 }}
               >
-                <Header handleOpenLogin={handleOpenLogin} />
-                <Paste />
+                <PasteHeader handleOpenLogin={handleOpenLogin} />
+                <Paste
+                  handleReloadList={handleReloadList}
+                  reloadList={reloadList}
+                  isActive={currentTab === 1}
+                />
               </Box>
             </Box>
           </Box>

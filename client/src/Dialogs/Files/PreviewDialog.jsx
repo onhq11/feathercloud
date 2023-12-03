@@ -47,7 +47,7 @@ export default function PreviewDialog({
   ];
 
   return (
-    <Dialog open={isOpen} maxWidth="xl">
+    <Dialog open={isOpen} maxWidth="xl" disableEscapeKeyDown>
       <DialogTitle>
         <Typography variant="h6" sx={{ fontWeight: "bold", p: 1 }}>
           Preview

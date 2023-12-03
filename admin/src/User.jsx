@@ -1,4 +1,4 @@
-import { Box, IconButton, Typography } from "@mui/material";
+import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { AUTHORIZED, IN_QUEUE } from "./App";
 
 export default function User({
@@ -49,33 +49,37 @@ export default function User({
           </Typography>
         </Box>
         <Box>
-          <IconButton onClick={() => handleOpenApprove(data)}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-            >
-              <path
-                fill="#4cbd8b"
-                d="M17 14h-4.341a6 6 0 1 1 0-4H23v4h-2v4h-4v-4ZM7 14a2 2 0 1 0 0-4a2 2 0 0 0 0 4Z"
-              />
-            </svg>
-          </IconButton>
-          {type === AUTHORIZED && (
-            <IconButton onClick={() => handleDelete(data)}>
+          <Tooltip title="Grant permissions">
+            <IconButton onClick={() => handleOpenApprove(data)}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
                 height="24"
-                viewBox="0 0 256 256"
+                viewBox="0 0 24 24"
               >
                 <path
-                  fill="#dc4d5e"
-                  d="M216 48h-40v-8a24 24 0 0 0-24-24h-48a24 24 0 0 0-24 24v8H40a8 8 0 0 0 0 16h8v144a16 16 0 0 0 16 16h128a16 16 0 0 0 16-16V64h8a8 8 0 0 0 0-16ZM96 40a8 8 0 0 1 8-8h48a8 8 0 0 1 8 8v8H96Zm96 168H64V64h128Zm-80-104v64a8 8 0 0 1-16 0v-64a8 8 0 0 1 16 0Zm48 0v64a8 8 0 0 1-16 0v-64a8 8 0 0 1 16 0Z"
+                  fill="#4cbd8b"
+                  d="M17 14h-4.341a6 6 0 1 1 0-4H23v4h-2v4h-4v-4ZM7 14a2 2 0 1 0 0-4a2 2 0 0 0 0 4Z"
                 />
               </svg>
             </IconButton>
+          </Tooltip>
+          {type === AUTHORIZED && (
+            <Tooltip title="Delete user">
+              <IconButton onClick={() => handleDelete(data)}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 256 256"
+                >
+                  <path
+                    fill="#dc4d5e"
+                    d="M216 48h-40v-8a24 24 0 0 0-24-24h-48a24 24 0 0 0-24 24v8H40a8 8 0 0 0 0 16h8v144a16 16 0 0 0 16 16h128a16 16 0 0 0 16-16V64h8a8 8 0 0 0 0-16ZM96 40a8 8 0 0 1 8-8h48a8 8 0 0 1 8 8v8H96Zm96 168H64V64h128Zm-80-104v64a8 8 0 0 1-16 0v-64a8 8 0 0 1 16 0Zm48 0v64a8 8 0 0 1-16 0v-64a8 8 0 0 1 16 0Z"
+                  />
+                </svg>
+              </IconButton>
+            </Tooltip>
           )}
           {type === IN_QUEUE && <></>}
         </Box>

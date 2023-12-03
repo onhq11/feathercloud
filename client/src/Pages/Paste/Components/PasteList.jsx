@@ -7,131 +7,29 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import File from "./File";
-import useWebSocket from "react-use-websocket";
-import { STATUS_UPDATE_FILE } from "../../../App";
-import { useSnackbar } from "notistack";
+import Paste from "./Paste";
 import FolderDialog from "../../../Dialogs/FolderDialog";
+import PasteDialog from "../../../Dialogs/Paste/PasteDialog";
 
-export default function FilesList({
-  handleOpenPreview,
-  handleChangeGlobalPath,
-  uploadInProgress,
+export default function PasteList({
+  handleCloseEditor,
   handleReloadList,
   reloadList,
+  handleGetContent,
   isActive,
 }) {
-  const [files, setFiles] = useState([]);
+  const [pastes, setPastes] = useState([]);
   const [path, setPath] = useState("~");
-  const { enqueueSnackbar } = useSnackbar();
+  const [openPasteDialog, setOpenPasteDialog] = useState(false);
   const [openFolderDialog, setOpenFolderDialog] = useState(false);
-  const [currentInProgress, setCurrentInProgress] = useState(false);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
 
-  useEffect(() => {
-    if (!uploadInProgress) {
-      setTimeout(() => {
-        setCurrentInProgress(uploadInProgress);
-      }, 100);
-    }
-    setCurrentInProgress(uploadInProgress);
-  }, [uploadInProgress]);
+  const handleOpenPasteDialog = () => {
+    setOpenPasteDialog(true);
+  };
 
   const handleOpenFolderDialog = () => {
     setOpenFolderDialog(true);
-  };
-
-  const { sendJsonMessage } = useWebSocket(
-    window.location.href
-      .replace(/^https/, "wss")
-      .replace(/^http/, "ws")
-      .replace(/\/$/, "") + "/update",
-    {
-      share: true,
-      filter: () => false,
-      onMessage: (event) => {
-        const data = JSON.parse(event.data);
-        switch (data.status) {
-          case STATUS_UPDATE_FILE:
-            if (!currentInProgress) {
-              enqueueSnackbar(data.message, {
-                variant: "success",
-                anchorOrigin: {
-                  vertical: "bottom",
-                  horizontal: "left",
-                },
-                autoHideDuration: 2000,
-                style: {
-                  backgroundColor: "#4cbd8b",
-                  color: "white",
-                },
-              });
-            }
-
-            handleReloadList();
-            break;
-        }
-      },
-    },
-  );
-
-  useEffect(() => {
-    sendJsonMessage({
-      userId: localStorage.getItem("userId"),
-    });
-  }, [sendJsonMessage]);
-
-  useEffect(() => {
-    handleChangeGlobalPath(path);
-
-    setBreadcrumbs(
-      path.includes("~") ? path.split("/") : ("~" + "/" + path).split("/"),
-    );
-
-    fetch("/api/files/" + path, {
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => {
-        if (res.status !== 200) {
-          return res.json().then((error) => {
-            throw new Error(error.message);
-          });
-        }
-
-        return res.json();
-      })
-      .then((res) => {
-        const data = [...res];
-        data.sort(
-          (a, b) => new Date(b.last_modified) - new Date(a.last_modified),
-        );
-
-        setFiles(data);
-      })
-      .catch((err) => {
-        console.error(err);
-        enqueueSnackbar(err.message, {
-          variant: "error",
-          anchorOrigin: {
-            vertical: "bottom",
-            horizontal: "left",
-          },
-          autoHideDuration: 2000,
-          style: {
-            backgroundColor: "#dc4d5e",
-            color: "white",
-          },
-        });
-      });
-  }, [reloadList, path]);
-
-  const handleChangePath = (path, overwrite) => {
-    setPath((item) =>
-      overwrite ? path : item !== "~" ? item + "/" + path : path,
-    );
   };
 
   useEffect(() => {
@@ -144,6 +42,16 @@ export default function FilesList({
       ) {
         event.preventDefault();
         setOpenFolderDialog(true);
+        return;
+      }
+
+      if (
+        isActive &&
+        (event.ctrlKey || event.metaKey) &&
+        event.keyCode === 78
+      ) {
+        event.preventDefault();
+        setOpenPasteDialog(true);
         return;
       }
 
@@ -162,24 +70,60 @@ export default function FilesList({
     };
   }, [isActive]);
 
+  useEffect(() => {
+    setBreadcrumbs(
+      path.includes("~") ? path.split("/") : ("~" + "/" + path).split("/"),
+    );
+
+    fetch("/api/pastes/" + path, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => {
+        if (res.status !== 200) {
+          return res.json().then((error) => {
+            handleReloadList();
+            throw new Error(error.message);
+          });
+        }
+
+        return res.json();
+      })
+      .then((res) => {
+        const data = [...res];
+        data.sort(
+          (a, b) => new Date(b.last_modified) - new Date(a.last_modified),
+        );
+
+        setPastes(data);
+      });
+  }, [reloadList, path]);
+
+  const handleChangePath = (path, overwrite) => {
+    setPath((item) =>
+      overwrite ? path : item !== "~" ? item + "/" + path : path,
+    );
+  };
+
   return (
     <Box
       sx={{
-        flex: 1,
+        flex: 0.4,
         gap: 2,
         display: "flex",
         flexDirection: "column",
-        maxWidth: { xs: "100%", lg: "50%" },
       }}
     >
       <Box>
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
           <Typography variant="h6" sx={{ fontWeight: 600, color: "#a8a8a8" }}>
-            Files list
+            Paste list
           </Typography>
           <Box sx={{ display: "flex" }}>
             {path !== "~" && (
-              <Tooltip title="Go back (Backspace)">
+              <Tooltip title="Go back">
                 <IconButton
                   onClick={() => {
                     handleChangePath(
@@ -202,6 +146,21 @@ export default function FilesList({
                 </IconButton>
               </Tooltip>
             )}
+            <Tooltip title="Create paste (Ctrl+N)">
+              <IconButton onClick={handleOpenPasteDialog}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill="#4cbd8b"
+                    d="M21.731 2.269a2.625 2.625 0 0 0-3.712 0l-1.157 1.157l3.712 3.712l1.157-1.157a2.625 2.625 0 0 0 0-3.712Zm-2.218 5.93l-3.712-3.712l-12.15 12.15a5.25 5.25 0 0 0-1.32 2.214l-.8 2.685a.75.75 0 0 0 .933.933l2.685-.8a5.25 5.25 0 0 0 2.214-1.32L19.513 8.2Z"
+                  />
+                </svg>
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Create folder (Ctrl+Shift+N)">
               <IconButton onClick={handleOpenFolderDialog}>
                 <svg
@@ -244,7 +203,12 @@ export default function FilesList({
         isOpen={openFolderDialog}
         handleClose={() => setOpenFolderDialog(false)}
         path={path}
-        type={"file"}
+        type={"paste"}
+      />
+      <PasteDialog
+        isOpen={openPasteDialog}
+        handleClose={() => setOpenPasteDialog(false)}
+        path={path}
       />
       <Box
         sx={{
@@ -255,14 +219,17 @@ export default function FilesList({
           overflowY: "auto",
         }}
       >
-        {files.map((item, index) => (
-          <File
+        {pastes.map((item, index) => (
+          <Paste
             key={index}
             data={item}
-            handleOpenPreview={handleOpenPreview}
             handleReloadList={handleReloadList}
             handleChangePath={handleChangePath}
             path={path}
+            handleGetContent={(name, copyToClipboard) =>
+              handleGetContent(path, name, copyToClipboard)
+            }
+            handleCloseEditor={handleCloseEditor}
           />
         ))}
       </Box>
