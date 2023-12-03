@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSnackbar } from "notistack";
 import {
   INFO_PERMISSIONS_GRANTED,
@@ -34,6 +34,7 @@ export default function ApproveDialog({
     paste_delete: data?.currentPermissions?.includes("paste.delete") ?? false,
   });
   const { enqueueSnackbar } = useSnackbar();
+  const submitRef = useRef(null);
 
   useEffect(() => {
     setFriendlyName(data?.friendlyName || "");
@@ -57,6 +58,20 @@ export default function ApproveDialog({
         });
       }
     }
+
+    const handleKeyPress = (event) => {
+      if (isOpen && event.key === "Enter") {
+        submitRef.current.click();
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyPress);
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
   }, [
     isOpen,
     data?.currentPermissions,
@@ -89,7 +104,7 @@ export default function ApproveDialog({
     const permissions = [];
     Object.values(checkboxState).map((item, index) => {
       if (item) {
-        permissions.push(`file.${Object.keys(checkboxState)[index]}`);
+        permissions.push(Object.keys(checkboxState)[index].replace(/_/g, "."));
       }
 
       return null;
@@ -123,7 +138,7 @@ export default function ApproveDialog({
   };
 
   return (
-    <Dialog open={isOpen} maxWidth="xl">
+    <Dialog open={isOpen} maxWidth="xl" disableEscapeKeyDown>
       <DialogTitle>
         <Typography variant="h6" sx={{ fontWeight: "bold", m: 1, mb: 0 }}>
           Approve user
@@ -187,9 +202,9 @@ export default function ApproveDialog({
             control={
               <Checkbox
                 color="success"
-                checked={checkboxState.create_paste}
+                checked={checkboxState.paste_create}
                 onChange={(event) =>
-                  handleChangeCheckbox(event, "create_paste")
+                  handleChangeCheckbox(event, "paste_create")
                 }
               />
             }
@@ -199,9 +214,9 @@ export default function ApproveDialog({
             control={
               <Checkbox
                 color="success"
-                checked={checkboxState.delete_paste}
+                checked={checkboxState.paste_delete}
                 onChange={(event) =>
-                  handleChangeCheckbox(event, "delete_paste")
+                  handleChangeCheckbox(event, "paste_delete")
                 }
               />
             }
@@ -253,6 +268,7 @@ export default function ApproveDialog({
             </svg>
           }
           onClick={handleApprove}
+          ref={submitRef}
         >
           APPROVE
         </Button>

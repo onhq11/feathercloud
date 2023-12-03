@@ -41,13 +41,43 @@ export default function App() {
         contrastText: "#fff",
       },
     },
+    components: {
+      MuiChip: {
+        styleOverrides: {
+          root: {
+            borderRadius: "6px",
+            height: "24px",
+          },
+          label: {
+            padding: "0px 7px",
+            fontWeight: "bold",
+            fontSize: "12px",
+          },
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: "9px",
+          },
+        },
+      },
+      MuiDialog: {
+        styleOverrides: {
+          paper: {
+            borderRadius: "9px",
+          },
+        },
+      },
+    },
   });
 
   const { sendJsonMessage } = useWebSocket(
     window.location.href
       .replace(/^https/, "wss")
       .replace(/^http/, "ws")
-      .replace(/\/$/, "") + "/admin",
+      .replace(/\/$/, "")
+      .replace(/\/panel/g, "") + "/admin",
     {
       share: true,
       filter: () => false,

@@ -1,35 +1,37 @@
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  LinearProgress,
   TextField,
   Typography,
 } from "@mui/material";
-import useWebSocket from "react-use-websocket";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSnackbar } from "notistack";
-import { v4 } from "uuid";
-import {
-  ERROR_COMPLETE_FIELDS,
-  ERROR_INTERNAL_SERVER,
-  INFO_KEY_SAVED,
-  STATUS_IDLE,
-  STATUS_INSPECT,
-  STATUS_INSPECT_ABORT,
-  STATUS_OK,
-  STATUS_WAITING,
-} from "../../App";
+import { ERROR_COMPLETE_FIELDS } from "../App";
 
-export default function FolderDialog({ isOpen, handleClose, path }) {
+export default function FolderDialog({ isOpen, handleClose, path, type }) {
   const [name, setName] = useState("");
   const { enqueueSnackbar } = useSnackbar();
+  const submitRef = useRef(null);
 
   useEffect(() => {
     setName("");
+
+    const handleKeyPress = (event) => {
+      if (isOpen && event.key === "Enter") {
+        submitRef.current.click();
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyPress);
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
   }, [isOpen]);
 
   const handleSubmit = () => {
@@ -49,18 +51,27 @@ export default function FolderDialog({ isOpen, handleClose, path }) {
       return;
     }
 
-    fetch(`/api/create/${path !== "~" ? path + "/" : ""}${name}`, {
+    fetch(`/api/${type}/create/${path !== "~" ? path + "/" : ""}${name}`, {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
         Authorization: localStorage.getItem("key"),
       },
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (res.status !== 200) {
+          return res.json().then((error) => {
+            throw new Error(error.message);
+          });
+        }
+
+        return res.json();
+      })
       .then(() => {
         handleClose();
       })
       .catch((err) => {
+        handleClose();
         console.error(err);
         enqueueSnackbar(err.message, {
           variant: "error",
@@ -78,7 +89,7 @@ export default function FolderDialog({ isOpen, handleClose, path }) {
   };
 
   return (
-    <Dialog open={isOpen} maxWidth="xl">
+    <Dialog open={isOpen} maxWidth="xl" disableEscapeKeyDown>
       <DialogTitle>
         <Typography variant="h6" sx={{ fontWeight: "bold", p: 1, pb: 0 }}>
           Create folder
@@ -141,6 +152,7 @@ export default function FolderDialog({ isOpen, handleClose, path }) {
             </svg>
           }
           onClick={handleSubmit}
+          ref={submitRef}
         >
           CREATE
         </Button>

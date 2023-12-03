@@ -1,26 +1,12 @@
 import {
   Box,
-  Button,
   Dialog,
-  DialogActions,
   DialogContent,
   DialogTitle,
   LinearProgress,
   Typography,
 } from "@mui/material";
-import useWebSocket from "react-use-websocket";
-import { useEffect, useState } from "react";
-import { useSnackbar } from "notistack";
-import { v4 } from "uuid";
-import {
-  ERROR_INTERNAL_SERVER,
-  INFO_KEY_SAVED,
-  STATUS_IDLE,
-  STATUS_INSPECT,
-  STATUS_INSPECT_ABORT,
-  STATUS_OK,
-  STATUS_WAITING,
-} from "../../App";
+import { useEffect } from "react";
 
 export default function UploadDialog({
   isOpen,
