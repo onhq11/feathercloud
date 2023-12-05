@@ -152,8 +152,8 @@ require("express-ws")(adminApp);
 const upload = multer({ storage });
 const fileUpload = upload.single("file");
 
-app.use("/f", autoindex("uploads"));
-app.use("/p", autoindex("pastes"));
+app.use("/f", autoindex(autoindexPath));
+app.use("/p", autoindex(pastesPath));
 app.use(express.json());
 app.use(express.static("client/build"));
 adminApp.use(express.static("admin/build"));
