@@ -5,6 +5,7 @@ const fs = require("fs");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const autoindex = require("express-autoindex");
+const basicAuth = require("express-basic-auth");
 
 const FILE_UPLOAD = "file.upload";
 const FILE_DELETE = "file.delete";
@@ -30,6 +31,7 @@ const ERROR_CREATE_FOLDER = "There was an error creating folder";
 const ERROR_PASTE_SAVE = "There was an error saving paste";
 const ERROR_PASTE_READ = "There was an error reading paste";
 const ERROR_PASTE_REMOVE = "There was an error removing paste";
+const ERROR_UNAUTHORIZED = "Unauthorized";
 
 const SUCCESS_FILE_UPLOAD = "File uploaded successfully";
 const SUCCESS_FILE_REMOVE = "File removed successfully";
@@ -82,7 +84,6 @@ const sendLog = (value, ...other) => {
 };
 
 const sendError = (value, ...other) => {
-  const date = new Date();
   console.log(
     `[\x1b[35m${returnDate()}\x1b[0m] [\x1b[31mERROR\x1b[0m] ${value}`,
     ...other,
@@ -90,7 +91,6 @@ const sendError = (value, ...other) => {
 };
 
 const sendInfo = (value, ...other) => {
-  const date = new Date();
   console.log(
     `[\x1b[35m${returnDate()}\x1b[0m] [\x1b[34mINFO\x1b[0m] ${value}`,
     ...other,
@@ -195,36 +195,45 @@ app.post("/api/paste/edit/*", (req, res) => {
     const requestedPath = req.params[0].replace(/\.\.\//g, "");
     const writePath = path.join(pastesPath, requestedPath).replace(/~/g, "");
 
-    fs.writeFile(
-      writePath,
-      "-_- LANGUAGE=" +
-        (req.body?.language || "text") +
-        " -_-\n" +
-        req.body.content,
-      (err) => {
-        if (err) {
-          sendError(err.message || err);
-          return res
-            .status(500)
-            .send(generateResponse(STATUS_ERROR, ERROR_PASTE_SAVE));
-        }
-
-        if (
-          !(req.body.content?.length > 0) &&
-          !(req.body.language?.length > 0)
-        ) {
-          Object.values(clients).map((item) => {
-            item.send(
-              generateResponse(STATUS_UPDATE_FILE, WS_SUCCESS_PASTE_CREATED),
-            );
-          });
-        }
-
+    fs.mkdir(pastesPath, { recursive: true }, function (err) {
+      if (err) {
+        sendError(err.message || err);
         return res
-          .status(200)
-          .send(generateResponse(STATUS_OK, SUCCESS_PASTE_SAVE));
-      },
-    );
+          .status(500)
+          .send(generateResponse(STATUS_ERROR, ERROR_PASTE_SAVE));
+      }
+
+      fs.writeFile(
+        writePath,
+        "-_- LANGUAGE=" +
+          (req.body?.language || "text") +
+          " -_-\n" +
+          req.body.content,
+        (err) => {
+          if (err) {
+            sendError(err.message || err);
+            return res
+              .status(500)
+              .send(generateResponse(STATUS_ERROR, ERROR_PASTE_SAVE));
+          }
+
+          if (
+            !(req.body.content?.length > 0) &&
+            !(req.body.language?.length > 0)
+          ) {
+            Object.values(clients).map((item) => {
+              item.send(
+                generateResponse(STATUS_UPDATE_FILE, WS_SUCCESS_PASTE_CREATED),
+              );
+            });
+          }
+
+          return res
+            .status(200)
+            .send(generateResponse(STATUS_OK, SUCCESS_PASTE_SAVE));
+        },
+      );
+    });
   } else {
     return res
       .status(403)
@@ -487,8 +496,20 @@ app.get("/", (req, res) => {
   res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
 });
 
+const adminPassword = process.env.ADMIN_PANEL_PASSWORD;
+let auth = (req, res, next) => next();
+if (adminPassword !== "") {
+  auth = basicAuth({
+    users: {
+      admin: adminPassword,
+    },
+    challenge: true,
+    unauthorizedResponse: ERROR_UNAUTHORIZED,
+  });
+}
 adminApp.get(
   process.env.WEBSERVER_PORT === process.env.ADMIN_PANEL_PORT ? "/panel" : "/",
+  auth,
   (req, res) => {
     res.sendFile(path.resolve(__dirname, "admin", "build", "index.html"));
   },
@@ -729,12 +750,37 @@ const refreshClients = () => {
   });
 };
 
-app.listen(port, () => {
-  sendLog(`Server is running on http://localhost:${port}`);
-});
+const validateEnv = () => {
+  const requiredVariables = [
+    "AUTOINDEX_PATH",
+    "PASTES_PATH",
+    "WEBSERVER_PORT",
+    "ADMIN_PANEL_PORT",
+  ];
 
-if (!(process.env.WEBSERVER_PORT === process.env.ADMIN_PANEL_PORT)) {
-  adminApp.listen(adminPort, () => {
-    sendLog(`Admin Server is running on http://localhost:${adminPort}`);
+  const missingVariables = requiredVariables.filter(
+    (variable) => !process.env[variable],
+  );
+
+  if (missingVariables.length > 0) {
+    sendError("The following environment variables are missing or not set:");
+    missingVariables.forEach((variable) => {
+      sendError(`- ${variable}`);
+    });
+    return false;
+  }
+
+  return true;
+};
+
+if (validateEnv()) {
+  app.listen(port, () => {
+    sendLog(`Server is running on http://localhost:${port}`);
   });
+
+  if (!(process.env.WEBSERVER_PORT === process.env.ADMIN_PANEL_PORT)) {
+    adminApp.listen(adminPort, () => {
+      sendLog(`Admin Server is running on http://localhost:${adminPort}`);
+    });
+  }
 }

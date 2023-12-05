@@ -28,6 +28,7 @@ export default function Preview({
   handleGetContent,
   currentFile,
   hasEditPermissions,
+  handleEditorContent,
 }) {
   const [autosave, setAutosave] = useState(
     localStorage.getItem("autosave") !== "false",
@@ -93,6 +94,7 @@ export default function Preview({
 
   useEffect(() => {
     handleUnsaved(currentContent !== editorContent);
+    handleEditorContent(editorContent);
   }, [editorContent]);
 
   useEffect(() => {
