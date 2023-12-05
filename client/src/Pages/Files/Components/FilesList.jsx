@@ -14,7 +14,6 @@ import { useSnackbar } from "notistack";
 import FolderDialog from "../../../Dialogs/FolderDialog";
 
 export default function FilesList({
-  handleOpenPreview,
   handleChangeGlobalPath,
   uploadInProgress,
   handleReloadList,
@@ -259,7 +258,6 @@ export default function FilesList({
           <File
             key={index}
             data={item}
-            handleOpenPreview={handleOpenPreview}
             handleReloadList={handleReloadList}
             handleChangePath={handleChangePath}
             path={path}

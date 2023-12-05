@@ -23,7 +23,27 @@ export default function PreviewDialog({
   handleGetContent,
   currentFile,
   hasEditPermissions,
+  handleEditorContent,
+  handleOpenUnsavedDialog,
+  editorContent,
 }) {
+  const handleCloseModal = () => {
+    if (isUnsaved) {
+      handleOpenUnsavedDialog({
+        saveCallback: () => {
+          handleSave(editorContent, false);
+          handleClose();
+        },
+        cancelCallback: () => {
+          handleClose();
+        },
+      });
+      return;
+    }
+
+    handleClose();
+  };
+
   return (
     <Dialog open={isOpen} fullScreen>
       <DialogTitle>
@@ -53,6 +73,7 @@ export default function PreviewDialog({
             handleGetContent={handleGetContent}
             currentFile={currentFile}
             hasEditPermissions={hasEditPermissions}
+            handleEditorContent={handleEditorContent}
           />
         </Box>
       </DialogContent>
@@ -73,7 +94,7 @@ export default function PreviewDialog({
             </svg>
           }
           color="success"
-          onClick={handleClose}
+          onClick={handleCloseModal}
         >
           CANCEL
         </Button>

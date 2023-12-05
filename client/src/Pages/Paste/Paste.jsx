@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useSnackbar } from "notistack";
 import { INFO_PASTE_COPIED } from "../../App";
 import PreviewDialog from "../../Dialogs/Paste/PreviewDialog";
+import UnsavedDialog from "../../Dialogs/Paste/UnsavedDialog";
 
 export default function Paste({ handleReloadList, reloadList, isActive }) {
   const { enqueueSnackbar } = useSnackbar();
@@ -16,6 +17,9 @@ export default function Paste({ handleReloadList, reloadList, isActive }) {
   const [isUnsaved, setIsUnsaved] = useState(false);
   const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
   const [hasEditPermissions, setHasEditPermissions] = useState(false);
+  const [openUnsavedDialog, setOpenUnsavedDialog] = useState(false);
+  const [unsavedData, setUnsavedData] = useState({});
+  const [editorContent, setEditorContent] = useState("");
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("lg"));
 
@@ -23,8 +27,17 @@ export default function Paste({ handleReloadList, reloadList, isActive }) {
     setCurrentLanguage(language);
   };
 
+  const handleEditorContent = (content) => {
+    setEditorContent(content);
+  };
+
   const handleUnsaved = (state = true) => {
     setIsUnsaved(state);
+  };
+
+  const handleOpenUnsavedDialog = (data) => {
+    setOpenUnsavedDialog(true);
+    setUnsavedData(data);
   };
 
   const handleCloseEditor = () => {
@@ -74,6 +87,34 @@ export default function Paste({ handleReloadList, reloadList, isActive }) {
             style: {
               backgroundColor: "#4cbd8b",
               color: "white",
+            },
+          });
+          return;
+        }
+
+        if (!disabled && isUnsaved && currentFile !== path + "/" + name) {
+          handleOpenUnsavedDialog({
+            saveCallback: () => {
+              handleSave(editorContent, false);
+
+              setCurrentLanguage(language || "text");
+              setCurrentContent(content);
+
+              setDisabled(false);
+              setCurrentFile(path + "/" + name);
+              setFileName(name);
+              setOpenPreviewDialog(true);
+              setHasEditPermissions(res.hasEditPermission);
+            },
+            cancelCallback: () => {
+              setCurrentLanguage(language || "text");
+              setCurrentContent(content);
+
+              setDisabled(false);
+              setCurrentFile(path + "/" + name);
+              setFileName(name);
+              setOpenPreviewDialog(true);
+              setHasEditPermissions(res.hasEditPermission);
             },
           });
           return;
@@ -187,6 +228,15 @@ export default function Paste({ handleReloadList, reloadList, isActive }) {
         handleGetContent={handleGetContent}
         currentFile={currentFile}
         hasEditPermissions={hasEditPermissions}
+        handleEditorContent={handleEditorContent}
+        handleOpenUnsavedDialog={handleOpenUnsavedDialog}
+        editorContent={editorContent}
+      />
+      <UnsavedDialog
+        isOpen={openUnsavedDialog}
+        handleClose={() => setOpenUnsavedDialog(false)}
+        currentIsUnsaved={isUnsaved}
+        data={unsavedData}
       />
       <PasteList
         handleCloseEditor={handleCloseEditor}
@@ -208,6 +258,7 @@ export default function Paste({ handleReloadList, reloadList, isActive }) {
           handleGetContent={handleGetContent}
           currentFile={currentFile}
           hasEditPermissions={hasEditPermissions}
+          handleEditorContent={handleEditorContent}
         />
       )}
     </Box>

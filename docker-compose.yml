@@ -5,7 +5,7 @@ services:
     image: onhq/feathercloud
     container_name: feathercloud
     volumes:
-      - ${CONTAINER_VOLUME}:/app
+      - ${CONTAINER_VOLUME}:/app/media
     environment:
       AUTOINDEX_PATH: ${AUTOINDEX_PATH}
       WEBSERVER_PORT: ${WEBSERVER_PORT}
