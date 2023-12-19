@@ -48,7 +48,7 @@ export default function User({
             )}
           </Typography>
         </Box>
-        <Box>
+        <Box sx={{ minWidth: "80px" }}>
           <Tooltip title="Grant permissions">
             <IconButton onClick={() => handleOpenApprove(data)}>
               <svg

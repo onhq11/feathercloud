@@ -29,6 +29,8 @@ export default function Preview({
   currentFile,
   hasEditPermissions,
   handleEditorContent,
+  handleAutocompleteOpen,
+  handleAutocompleteClose,
 }) {
   const [autosave, setAutosave] = useState(
     localStorage.getItem("autosave") !== "false",
@@ -273,6 +275,8 @@ export default function Preview({
                   />
                 </Box>
                 <Autocomplete
+                  onOpen={handleAutocompleteOpen}
+                  onClose={handleAutocompleteClose}
                   value={language}
                   onChange={(event, value) => {
                     setLanguage(value);
@@ -282,7 +286,13 @@ export default function Preview({
                     option.id === value.id
                   }
                   renderInput={(params) => (
-                    <TextField {...params} variant="outlined" color="success" />
+                    <TextField
+                      {...params}
+                      onFocus={handleAutocompleteOpen}
+                      onBlur={handleAutocompleteClose}
+                      variant="outlined"
+                      color="success"
+                    />
                   )}
                   options={monacoLanguages}
                   groupBy={(option) => option.text}

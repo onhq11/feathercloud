@@ -103,7 +103,7 @@ export default function Paste({
               sx={{ color: "#919191", cursor: "pointer" }}
               onClick={(event) => {
                 event.stopPropagation();
-                navigator.clipboard
+                window.navigator.clipboard
                   .writeText(
                     window.location.href.substring(
                       0,

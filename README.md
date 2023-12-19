@@ -13,6 +13,26 @@ Lightweight and easy-to-use file and pastebin server with single-device permissi
 
 FeatherCloud is an lightweight open-source file and pastebin server with easy to use WebUI
 
+## Features
+
+- Multiple upload, delete, download file and paste
+- Edit paste in monaco editor (VSCode based) in browser
+- Grant permission to every single device
+
+## Screenshots
+
+### Files list:
+
+<img src="https://raw.githubusercontent.com/onhq11/FeatherCloud/main/img/screenshots/ss1.png" style="border-radius: 20px">
+
+### Paste list:
+
+<img src="https://raw.githubusercontent.com/onhq11/FeatherCloud/main/img/screenshots/ss2.png" style="border-radius: 20px">
+
+### Admin panel:
+
+<img src="https://raw.githubusercontent.com/onhq11/FeatherCloud/main/img/screenshots/ss3.png" style="border-radius: 20px">
+
 ## Requirements (without Docker)
 
 - NodeJS
@@ -44,7 +64,7 @@ FeatherCloud is an lightweight open-source file and pastebin server with easy to
 - **WEBSERVER_PORT** - webserver port
 - **ADMIN_PANEL_PORT** - admin panel port (if you set same port for admin panel and webserver, admin panel will be
   available at /panel)
-- **ADMIN_PANEL_PASSWORD** - admin panel password (if you don't need this feature, just leave blank)
+- **ADMIN_PANEL_PASSWORD** - admin panel password USERNAME="admin" (if you don't need this feature, just leave blank)
 - **CONTAINER_VOLUME** - path on your host machine, where files will be saved (only for docker)
 
 ## Used technologies
@@ -56,12 +76,6 @@ FeatherCloud is an lightweight open-source file and pastebin server with easy to
 - Express Basic Auth (admin panel auth)
 - Multer (file upload)
 - Makefile (easier server management)
-
-## Features
-
-- Multiple upload, delete, download file and paste
-- Edit paste in monaco editor (VSCode based) in browser
-- Grant permission to every single device
 
 ## Authors
 

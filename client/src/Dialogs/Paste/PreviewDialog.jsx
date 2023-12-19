@@ -26,6 +26,8 @@ export default function PreviewDialog({
   handleEditorContent,
   handleOpenUnsavedDialog,
   editorContent,
+  handleAutocompleteClose,
+  handleAutocompleteOpen,
 }) {
   const handleCloseModal = () => {
     if (isUnsaved) {
@@ -74,6 +76,8 @@ export default function PreviewDialog({
             currentFile={currentFile}
             hasEditPermissions={hasEditPermissions}
             handleEditorContent={handleEditorContent}
+            handleAutocompleteOpen={handleAutocompleteOpen}
+            handleAutocompleteClose={handleAutocompleteClose}
           />
         </Box>
       </DialogContent>

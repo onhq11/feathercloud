@@ -107,6 +107,7 @@ let clients = {};
 let waitingClients = {};
 let admins = {};
 let users = { users: [] };
+let clientLimit = [];
 
 fs.readFile("users.json", (err, file) => {
   if (err) {
@@ -133,9 +134,10 @@ if (process.env.WEBSERVER_PORT === process.env.ADMIN_PANEL_PORT) {
 }
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path
+    let uploadPath = path
       .join(autoindexPath, req.params[0].replace(/\.\.\//g, ""))
       .replace(/~/g, "");
+    uploadPath = uploadPath.substring(0, uploadPath.lastIndexOf("/"));
 
     createDirectoryIfNotExists(uploadPath);
 
@@ -191,9 +193,50 @@ app.post("/api/paste/edit/*", (req, res) => {
   const user = users.users.find(
     (item) => item.key === req.headers.authorization,
   );
-  if (!!user && user.permissions.includes(PASTE_CREATE)) {
+  let userLimit = {};
+  let userLimitIndex = -1;
+  clientLimit.map((item, index) => {
+    if (JSON.stringify(user) === JSON.stringify(item?.user)) {
+      userLimit = item;
+      userLimitIndex = index;
+    }
+  });
+
+  if (!!userLimit?.limitExpires && userLimit?.limitExpires < new Date()) {
+    const currentDate = new Date();
+    currentDate.setMinutes(currentDate.getMinutes() + 1);
+    const newObject = {
+      ...clientLimit[userLimitIndex],
+      num: 0,
+      limitExpires: currentDate,
+    };
+    clientLimit[userLimitIndex] = { ...newObject };
+    userLimit = { ...newObject };
+  }
+
+  if (
+    !!user &&
+    user.permissions.includes(PASTE_CREATE) &&
+    (!userLimit?.limitExpires || userLimit.num < 20)
+  ) {
     const requestedPath = req.params[0].replace(/\.\.\//g, "");
     const writePath = path.join(pastesPath, requestedPath).replace(/~/g, "");
+
+    if (!!userLimit?.limitExpires) {
+      clientLimit[userLimitIndex] = {
+        ...clientLimit[userLimitIndex],
+        num:
+          userLimit.num +
+          (clientLimit[userLimitIndex]?.lastSavedFile === req.params[0]
+            ? 0.1
+            : 1),
+        lastSavedFile: req.params[0],
+      };
+    } else {
+      const currentDate = new Date();
+      currentDate.setMinutes(currentDate.getMinutes() + 1);
+      clientLimit.push({ user: user, num: 1, limitExpires: currentDate });
+    }
 
     fs.mkdir(pastesPath, { recursive: true }, function (err) {
       if (err) {
@@ -494,6 +537,13 @@ app.get("/api/paste/create/*", (req, res) => {
 
 app.get("/", (req, res) => {
   res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+});
+
+app.use((req, res, next) => {
+  if (!req.url.startsWith("/panel")) {
+    res.sendFile(path.resolve(__dirname, "404.html"));
+  }
+  next();
 });
 
 const adminPassword = process.env.ADMIN_PANEL_PASSWORD;

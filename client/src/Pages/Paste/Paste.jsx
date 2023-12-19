@@ -1,7 +1,7 @@
 import { Box, useMediaQuery, useTheme } from "@mui/material";
 import PasteList from "./Components/PasteList";
 import Preview from "./Components/Preview";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSnackbar } from "notistack";
 import { INFO_PASTE_COPIED } from "../../App";
 import PreviewDialog from "../../Dialogs/Paste/PreviewDialog";
@@ -22,6 +22,15 @@ export default function Paste({ handleReloadList, reloadList, isActive }) {
   const [editorContent, setEditorContent] = useState("");
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("lg"));
+  const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
+
+  const handleAutocompleteOpen = () => {
+    setIsAutocompleteOpen(true);
+  };
+
+  const handleAutocompleteClose = () => {
+    setIsAutocompleteOpen(false);
+  };
 
   const handleChangeGlobalLanguage = (language) => {
     setCurrentLanguage(language);
@@ -76,7 +85,7 @@ export default function Paste({ handleReloadList, reloadList, isActive }) {
         const content = fileContent.split("-_-")?.[2]?.replace("\n", "");
 
         if (copyToClipboard) {
-          navigator.clipboard.writeText(content);
+          window.navigator.clipboard.writeText(content);
           enqueueSnackbar(INFO_PASTE_COPIED, {
             variant: "success",
             anchorOrigin: {
@@ -244,6 +253,7 @@ export default function Paste({ handleReloadList, reloadList, isActive }) {
         reloadList={reloadList}
         handleGetContent={handleGetContent}
         isActive={isActive}
+        isAutocompleteOpen={isAutocompleteOpen}
       />
       {!isSmallScreen && (
         <Preview
@@ -259,6 +269,8 @@ export default function Paste({ handleReloadList, reloadList, isActive }) {
           currentFile={currentFile}
           hasEditPermissions={hasEditPermissions}
           handleEditorContent={handleEditorContent}
+          handleAutocompleteOpen={handleAutocompleteOpen}
+          handleAutocompleteClose={handleAutocompleteClose}
         />
       )}
     </Box>
