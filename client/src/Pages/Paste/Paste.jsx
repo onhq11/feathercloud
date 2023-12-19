@@ -1,7 +1,7 @@
 import { Box, useMediaQuery, useTheme } from "@mui/material";
 import PasteList from "./Components/PasteList";
 import Preview from "./Components/Preview";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSnackbar } from "notistack";
 import { INFO_PASTE_COPIED } from "../../App";
 import PreviewDialog from "../../Dialogs/Paste/PreviewDialog";
