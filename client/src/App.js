@@ -204,6 +204,7 @@ export default function App() {
                   handleReloadList={handleReloadList}
                   reloadList={reloadList}
                   isActive={currentTab === 1}
+                  openLogin={openLogin}
                 />
               </Box>
             </Box>

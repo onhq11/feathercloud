@@ -160,9 +160,17 @@ export default function App() {
               px: 4.5,
               display: "flex",
               gap: 4,
+              flexWrap: "wrap",
             }}
           >
-            <Box sx={{ flex: 2, display: "flex", flexDirection: "column" }}>
+            <Box
+              sx={{
+                flex: 2,
+                display: "flex",
+                flexDirection: "column",
+                minWidth: 400,
+              }}
+            >
               <Box>
                 <Typography
                   variant="h4"
@@ -192,7 +200,7 @@ export default function App() {
                 />
               </Box>
             </Box>
-            <Box sx={{ flex: 1 }}>
+            <Box sx={{ flex: 1, minWidth: 400 }}>
               <AuthorizedUsers
                 data={authorized}
                 sendJsonMessage={sendJsonMessage}

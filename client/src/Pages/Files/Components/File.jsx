@@ -110,7 +110,7 @@ export default function File({
                 event.stopPropagation();
                 const url = path.replace(/~/g, "");
 
-                navigator.clipboard
+                window.navigator.clipboard
                   .writeText(
                     window.location.href.substring(
                       0,

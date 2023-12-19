@@ -17,6 +17,7 @@ export default function PasteList({
   reloadList,
   handleGetContent,
   isActive,
+  isAutocompleteOpen,
 }) {
   const [pastes, setPastes] = useState([]);
   const [path, setPath] = useState("~");
@@ -55,20 +56,31 @@ export default function PasteList({
         return;
       }
 
-      if (isActive && event.key === "Backspace") {
+      if (
+        isActive &&
+        event.key === "Backspace" &&
+        !openFolderDialog &&
+        !openPasteDialog &&
+        !isAutocompleteOpen
+      ) {
         event.preventDefault();
         handleChangePath(path.split("/").slice(0, -1).join("/") || "~", true);
       }
     };
 
-    if (isActive) {
+    if (
+      isActive &&
+      !openFolderDialog &&
+      !openPasteDialog &&
+      !isAutocompleteOpen
+    ) {
       window.addEventListener("keydown", handleKeyPress);
     }
 
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
     };
-  }, [isActive]);
+  }, [isActive, isAutocompleteOpen, openPasteDialog, openFolderDialog]);
 
   useEffect(() => {
     setBreadcrumbs(

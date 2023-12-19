@@ -22,7 +22,7 @@ export default function Files({ handleReloadList, reloadList, isActive }) {
         gap: 5,
         justifyContent: "space-between",
         flexDirection: { xs: "column", lg: "row" },
-        height: "90%",
+        height: "85%",
       }}
     >
       <DropzoneArea

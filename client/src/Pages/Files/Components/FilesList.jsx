@@ -146,7 +146,7 @@ export default function FilesList({
         return;
       }
 
-      if (isActive && event.key === "Backspace") {
+      if (isActive && event.key === "Backspace" && !openFolderDialog) {
         event.preventDefault();
         handleChangePath(path.split("/").slice(0, -1).join("/") || "~", true);
       }
